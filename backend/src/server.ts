@@ -1,0 +1,22 @@
+import "dotenv/config";
+import { app } from "./app";
+import { databaseConfig, yandexGptConfig } from "./config";
+import { startDiagnosisWorker } from "./jobs/diagnosisJob";
+import { logger } from "./utils/logger";
+
+if (!databaseConfig.url) {
+  logger.warn("DATABASE_URL не задан — Prisma/миграции не сработают");
+}
+if (!yandexGptConfig.folderId && !yandexGptConfig.apiKey) {
+  logger.debug("Yandex Cloud credentials не заданы (нормально на этапе 1)");
+}
+
+if (process.env.DISABLE_BULL !== "1") {
+  startDiagnosisWorker();
+}
+
+const port = Number(process.env.PORT) || 3000;
+
+app.listen(port, () => {
+  logger.info({ port, env: process.env.NODE_ENV ?? "development" }, "HTTP server started");
+});

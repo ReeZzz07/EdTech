@@ -1,0 +1,193 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String  @id @default(cuid())
+  telegramId BigInt  @unique
+  firstName  String
+  lastName   String?
+  username   String?
+  avatar     String?
+
+  coinBalance  Int     @default(0)
+  level        Int     @default(1)
+  experience   Int     @default(0)
+  isPremium    Boolean @default(false)
+  premiumUntil DateTime?
+  dailyStreak  Int     @default(0)
+  lastActiveDate DateTime @default(now())
+  schoolName   String?
+  grade        Int     @default(9)
+  settings     Json?
+  /// Онбординг в клиенте (MVP-флаг)
+  onboardingComplete Boolean @default(false)
+  /// Всего завершённых диагнозов (кеш)
+  totalProblemsSolved Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  problems     Problem[]
+  transactions CoinTransaction[]
+  achievements UserAchievement[]
+  dailySolves  DailySolve[]
+  clanMembers  ClanMember[]
+  ownedClans   Clan[]          @relation("ClanOwner")
+  feedbacks    ProblemFeedback[]
+
+  @@index([lastActiveDate])
+}
+
+model Subject {
+  id        String  @id @default(cuid())
+  code      String  @unique
+  name      String
+  isEnabled Boolean @default(true)
+  sortOrder Int     @default(0)
+  fipiSpecKey String?
+  /// Заглушка под карту навыков (JSON) — может наполняться без смены схемы
+  skillMap   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  problems Problem[]
+}
+
+model Problem {
+  id     String  @id @default(cuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  /// Публичный/внутренний URL изображения (S3 или /api/files/...)
+  imageUrl String
+  /// Ключ в S3 или путь local storage (для presigned/удаления)
+  imageKey  String?
+  topic     String  @default("")
+  difficulty Int    @default(3)
+  originalText   String?
+  studentSolution String?
+  correctSolution String   @default("")
+  explanation     String   @default("")
+  status  String  @default("analyzing")
+  /// Идемпотентность начислений: монеты/XP за эту попытку обработаны
+  rewardsApplied Boolean @default(false)
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  diagnosis Diagnosis?
+  feedbacks ProblemFeedback[]
+
+  @@index([userId, createdAt])
+  @@index([subjectId])
+}
+
+model Diagnosis {
+  id        String  @id @default(cuid())
+  problemId String  @unique
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  overallScore Int
+  timeSpent    Int?
+  steps        Json
+  errors       Json
+  recommendations Json
+  skillAssessment Json
+  coinsEarned  Int  @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+/// Оценка качества диагностики (MVP: одна запись на пару user+problem)
+model ProblemFeedback {
+  id        String @id @default(cuid())
+  problemId String
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  quality   Int?
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, problemId])
+  @@index([problemId])
+}
+
+model CoinTransaction {
+  id     String @id @default(cuid())
+  userId String
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Положительное — начисление, отрицательное — трата
+  amount  Int
+  type    String
+  /// Напр. id Problem для идемпотентности
+  refId  String?
+  meta   Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, type, refId])
+}
+
+model UserAchievement {
+  id        String @id @default(cuid())
+  userId   String
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code     String
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, code])
+}
+
+/// Дневной учёт: лимит решений, кап ежедневных монет
+model DailySolve {
+  id     String @id @default(cuid())
+  userId String
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// UTC-день YYYY-MM-DD
+  dayKey String
+  solveCount  Int @default(0)
+  coinsFromSolves Int @default(0)
+
+  @@unique([userId, dayKey])
+  @@index([dayKey])
+}
+
+model Clan {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  avatar      String?
+  ownerId     String
+  owner       User  @relation("ClanOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  isPublic    Boolean @default(true)
+  maxMembers  Int     @default(30)
+  /// Еженедельный челлендж (MVP-заглушка)
+  challengeJson Json?
+
+  createdAt DateTime @default(now())
+  members ClanMember[]
+
+  @@index([isPublic, name])
+}
+
+model ClanMember {
+  id     String @id @default(cuid())
+  clanId String
+  userId String
+  clan   Clan  @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   String @default("member")
+  joinedAt DateTime @default(now())
+
+  @@unique([clanId, userId])
+  @@index([userId])
+}
