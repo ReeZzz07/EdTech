@@ -48,6 +48,17 @@ Monorepo: `backend` (Node.js, Express, Prisma) + `frontend` (Vite/React, см. [
 
 Файл `vercel.json` в корне задаёт install/build/output и SPA-rewrite для React Router.
 
+### Проверка прод API после деплоя
+
+1. На Vercel в Variables выставить `VITE_API_BASE=https://<api-host>` (без `/` в конце) и сделать Redeploy.
+2. На бэкенде `CORS_ORIGINS` должен включать `https://ege-pro.vercel.app` (и кастомный домен, если есть).
+3. Проверить health API:
+   - `curl https://<api-host>/api/health`
+4. Проверить CORS (preflight):
+   - `curl -i -X OPTIONS https://<api-host>/api/health -H "Origin: https://ege-pro.vercel.app" -H "Access-Control-Request-Method: GET"`
+   - ожидание: `HTTP 204/200` и `Access-Control-Allow-Origin: https://ege-pro.vercel.app`.
+5. В браузере на `https://ege-pro.vercel.app/login` в DevTools -> Network не должно быть CORS ошибок на запросах к `/api/*`.
+
 ## Структура
 
 См. раздел «Структура проекта» в `docs/TZ.md` — дорабатывается по мере этапов roadmap.
