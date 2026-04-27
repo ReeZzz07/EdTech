@@ -1,0 +1,11 @@
+node_modules
+frontend
+uploads
+postgres-data
+.git
+.cursor
+dist
+coverage
+*.log
+Thumbs.db
+.DS_Store

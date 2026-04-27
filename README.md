@@ -34,9 +34,12 @@ Monorepo: `backend` (Node.js, Express, Prisma) + `frontend` (Vite/React, см. [
 
 - [ТЗ](docs/TZ.md)
 - [Roadmap](docs/roadmap.md)
+- [Деплой backend API в прод](docs/deploy-backend.md)
 - [Правила агента](.cursor/rules.mdc)
 
 ## Деплой фронта на Vercel
+
+Полный сценарий API + Postgres + Redis + переменные — в **[docs/deploy-backend.md](docs/deploy-backend.md)**.
 
 Репозиторий — **npm workspaces** (корень + `frontend/` + `backend/`). На Vercel поднимается только **статический билд Vite** из `frontend/dist`; API нужно вынести отдельно (Railway, Render, Fly.io, VPS и т.д.) и указать его URL в переменных.
 

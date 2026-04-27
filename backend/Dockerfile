@@ -10,4 +10,5 @@ COPY prisma ./prisma
 RUN npx prisma generate && npm run build && npm prune --omit=dev
 EXPOSE 3000
 ENV NODE_ENV=production
-CMD ["node", "dist/server.js"]
+# Миграции на старте; в managed-среде с «Release command» можно вынести в release и оставить только `node dist/server.js`
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
