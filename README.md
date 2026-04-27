@@ -36,6 +36,18 @@ Monorepo: `backend` (Node.js, Express, Prisma) + `frontend` (Vite/React, см. [
 - [Roadmap](docs/roadmap.md)
 - [Правила агента](.cursor/rules.mdc)
 
+## Деплой фронта на Vercel
+
+Репозиторий — **npm workspaces** (корень + `frontend/` + `backend/`). На Vercel поднимается только **статический билд Vite** из `frontend/dist`; API нужно вынести отдельно (Railway, Render, Fly.io, VPS и т.д.) и указать его URL в переменных.
+
+1. В [Vercel](https://vercel.com) — **Import** репозитория, корень проекта оставить **репозиторием целиком** (не менять Root Directory на `frontend`, если используешь корневой `vercel.json`).
+2. **Environment Variables** (Production / Preview по желанию):
+   - **`VITE_API_BASE`** — для **сборки не обязателен**: в коде подставляется пустая строка, билд пройдёт и без него. Если в Vercel переменная помечена как обязательная — **сними «Required»** или задай значение **пустой строки** (если поле не даёт сохранить пустое — временно удали переменную из списка и задеплой, потом добавь URL бэка). Когда API уже задеплоен — укажи полный URL **без** слэша в конце, например `https://api.example.com` (запросы: `{VITE_API_BASE}/api/...`). Локально с Vite обычно пусто + прокси.
+   - По желанию: `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST`, для предпросмотра без Telegram в **Preview**: `VITE_DEV_JWT` (только если осознанно нужен dev-логин на стенде).
+3. **`CORS_ORIGINS`** на бэкенде (список через запятую) должен включать `https://<project>.vercel.app` и кастомный домен после подключения (см. `backend/.env.example`).
+
+Файл `vercel.json` в корне задаёт install/build/output и SPA-rewrite для React Router.
+
 ## Структура
 
 См. раздел «Структура проекта» в `docs/TZ.md` — дорабатывается по мере этапов roadmap.
