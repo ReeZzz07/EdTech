@@ -15,6 +15,12 @@ import { logger } from "./utils/logger";
 
 export const app = express();
 
+// За Traefik/Coolify приходят X-Forwarded-*; иначе express-rate-limit кидает ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+if (process.env.TRUST_PROXY !== "0") {
+  const hops = process.env.TRUST_PROXY ? Number(process.env.TRUST_PROXY) : 1;
+  app.set("trust proxy", Number.isFinite(hops) && hops >= 0 ? hops : 1);
+}
+
 const corsOrigins = (process.env.CORS_ORIGINS ?? "http://localhost:5173,http://127.0.0.1:5173,https://web.telegram.org")
   .split(",")
   .map((s) => s.trim())
