@@ -1,89 +1,212 @@
-# Деплой backend API в прод
+# Полный деплой приложения на Coolify
 
-Цель: поднять **Express + Prisma + Bull** рядом с **PostgreSQL** и **Redis**, затем связать фронт на Vercel (`VITE_API_BASE`) и CORS.
+Цель: развернуть **frontend + backend + PostgreSQL + Redis** целиком на одном VPS через Coolify, с автодеплоем из Git.
 
-## Что нужно в переменных окружения
+## Что должно получиться в итоге
 
-Ориентир — `backend/.env.example`. В проде обязательно задай как минимум:
+- `https://app.<домен>` -> frontend (Vite SPA)
+- `https://api.<домен>` -> backend (Express + Prisma + Bull)
+- Postgres и Redis в приватной сети Coolify (без публичных портов)
 
-| Переменная           | Комментарий                                                                                                                      |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`       | Postgres (часто подставляется платформой из привязанной БД)                                                                      |
-| `REDIS_URL`          | Redis для Bull                                                                                                                   |
-| `JWT_SECRET`         | Длинная случайная строка                                                                                                         |
-| `TELEGRAM_BOT_TOKEN` | От [@BotFather](https://t.me/BotFather) для валидации `initData`                                                                 |
-| `CORS_ORIGINS`       | Через запятую: локальный dev, `https://web.telegram.org`, **`https://ege-pro.vercel.app`**, кастомный домен фронта при появлении |
-| `APP_PUBLIC_URL`     | Публичный HTTPS URL **этого API** (без `/` в конце), нужен для локальных файлов/S3-путей по ТЗ                                   |
+## 1) Подготовка DNS и доменов
 
-Опционально: S3 (`AWS_*`), Yandex GPT (`YANDEX_*`), `INTERNAL_COIN_EARN_KEY`.  
-`DISABLE_BULL=1` — если нужно временно без очереди (диагноз уйдёт в inline-fallback из кода).
+Создай A-записи на IP VPS:
 
-`PORT` обычно задаёт хостинг (Railway/Render); локально по умолчанию `3000`.
+- `app.<домен>` -> `<IP_VPS>`
+- `api.<домен>` -> `<IP_VPS>`
 
-## Вариант A: Railway (рекомендуется)
+Если нужен один домен без `app`, можно использовать `https://<домен>` для фронта и `https://api.<домен>` для API.
 
-1. [Railway](https://railway.app) → New Project → **Deploy from GitHub** → репозиторий `EdTech`.
-2. Добавь плагины **PostgreSQL** и **Redis** в том же проекте.
-3. Сервис API:
-   - **Root Directory** оставь **пустым** (корень репо), чтобы использовался корневой `Dockerfile`.
-   - Либо Root = `backend` и тогда билд через `backend/Dockerfile` (см. комментарий внутри файла).
-4. В **Variables** сервиса API:
-   - Подтяни `DATABASE_URL` / `REDIS_URL` из плагинов (Reference variable), либо вставь значения вручную.
-   - Задай остальные переменные из таблицы выше.
-5. Первый деплой: образ сам выполнит `prisma migrate deploy` перед стартом (см. `Dockerfile` в корне).
-6. Проверка:
-   - `GET https://<твой-api-домен>/api/health` — JSON со `status: ok`.
-7. **Сиды** (один раз или после смены данных):
-   ```bash
-   railway link   # в каталоге репо
-   railway run npm run db:seed -w backend
-   ```
-8. На **Vercel**: Environment → `VITE_API_BASE` = `https://<тот же хост что API>` без слэша в конце → **Redeploy** фронта.
+## 2) Создай ресурсы в Coolify
 
-## Вариант B: Docker у себя
+В одном project/environment:
 
-Из корня репозитория:
+1. **PostgreSQL** resource.
+2. **Redis** resource.
+3. **Backend app** (Dockerfile из Git).
+4. **Frontend app** (Dockerfile из Git).
 
-```bash
-docker build -t egepro-api .
-docker run --env-file backend/.env -p 3000:3000 egepro-api
+Важно: backend и frontend удобнее делать двумя отдельными приложениями, чтобы независимо деплоить.
+
+## 3) Backend: настройки приложения
+
+### Source
+
+- Repository: твой `EdTech`
+- Branch: `master`
+- Build Pack: Dockerfile
+- Dockerfile path: `Dockerfile`
+- Base directory: корень репозитория
+
+Текущий корневой `Dockerfile` уже собирает backend и запускает:
+
+- `npx prisma migrate deploy`
+- `node dist/server.js`
+
+### Domain
+
+- Добавь домен: `api.<домен>`
+- Включи HTTPS (Let's Encrypt) в Coolify
+
+### Environment variables (backend)
+
+Минимально обязательно:
+
+- `NODE_ENV=production`
+- `JWT_SECRET=<длинный_секрет>`
+- `TELEGRAM_BOT_TOKEN=<bot_token>`
+- `APP_PUBLIC_URL=https://api.<домен>`
+- `CORS_ORIGINS=https://app.<домен>,https://web.telegram.org`
+- `TRUST_PROXY=1`
+
+Подключение БД/Redis:
+
+- `DATABASE_URL` -> из PostgreSQL resource (через internal hostname/port)
+- `REDIS_URL` -> из Redis resource (через internal hostname/port)
+
+Опционально:
+
+- `INTERNAL_COIN_EARN_KEY`
+- `AWS_*`
+- `YANDEX_*`
+
+Критично:
+
+- `REDIS_URL` не должен быть `127.0.0.1:6379`.
+- `TRUST_PROXY` нужен за Traefik, иначе express-rate-limit будет ругаться.
+
+## 4) Frontend: Dockerfile для SPA
+
+Для фронта нужен отдельный Dockerfile со сборкой Vite и раздачей статики через Nginx.
+
+Создай `frontend/Dockerfile`:
+
+```dockerfile
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY frontend ./frontend
+
+RUN npm ci && npm run build -w frontend
+
+FROM nginx:alpine
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 ```
 
-`backend/.env` должен содержать все прод-переменные; `DATABASE_URL` должен быть достижен из контейнера (не `127.0.0.1` хост-машины, если БД не в том же compose).
+Создай `frontend/nginx.conf`:
 
-## Вариант C: Россия — карта РФ и git-deploy
+```nginx
+server {
+  listen 80;
+  server_name _;
 
-Если **Railway недоступен**, а нужны **оплата картой РФ** и **деплой из Git** (push → сборка):
+  root /usr/share/nginx/html;
+  index index.html;
 
-### C1. PaaS у российского провайдера
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
+```
 
-- **[Timeweb Cloud App Platform](https://timeweb.cloud/services/apps)** — привязка репозитория (GitHub / GitLab / Bitbucket и т.п.), сборка из **`Dockerfile`** в корне репозитория, автодеплой по коммитам; оплата из РФ (уточни актуальный прайс и наличие managed Postgres/Redis в личном кабинете).
-- Аналогичную схему («репозиторий + Docker») имеют другие РФ-облака (**VK Cloud**, **Yandex Cloud**, **Selectel**) — ищи в доках раздел вроде *Containers / App Platform / Kubernetes* и подключение к Git.
+### Source (frontend app в Coolify)
 
-Для нашего монорепо укажи корень репозитория и **`Dockerfile` в корне** (он уже есть в проекте). Postgres и Redis добавь как отдельные сервисы того же провайдера или подними их на второй машине — главное прокинуть `DATABASE_URL` и `REDIS_URL` в приложение.
+- Repository: тот же `EdTech`
+- Branch: `master`
+- Build Pack: Dockerfile
+- Dockerfile path: `frontend/Dockerfile`
+- Base directory: корень репозитория
 
-### C2. VPS (карта РФ) + свой «мини‑Railway» на git
+### Domain (frontend)
 
-1. Берёшь **VPS** у Timeweb / Selectel / REG.RU / Beget и оплачиваешь картой РФ.
-2. Ставишь **[Coolify](https://coolify.io/)** или **CapRover** на VPS — это веб‑панель с **deploy из Git**, Docker и переменными окружения по сути как у PaaS.
-3. В Coolify добавляешь приложение из GitHub/GitLab, билд через корневой **`Dockerfile`**, задаёшь секреты как в таблице выше.
+- `app.<домен>` (или корневой домен)
+- HTTPS включён
 
-### C3. VPS + только CI (без панели)
+### Environment variables (frontend)
 
-На VPS крутишь **`docker compose`** (Postgres + Redis + API из образа). Деплой из Git делает **GitHub Actions** или **GitLab CI**: при push в `main` — SSH на сервер, `git pull` / `docker compose pull && up -d`. Секреты (`JWT_SECRET`, токены) хранишь на сервере в `.env`, не в репозитории.
+- `VITE_API_BASE=https://api.<домен>`
 
-После любого из вариантов C те же шаги, что в секции ниже («связка с фронтом»).
+## 5) Порядок первого деплоя
 
-## После деплоя: связка с фронтом
+1. Деплойни PostgreSQL resource.
+2. Деплойни Redis resource.
+3. Деплойни backend app.
+4. Проверь backend health.
+5. Деплойни frontend app.
 
-1. Vercel → `VITE_API_BASE` = URL API.
-2. Backend → `CORS_ORIGINS` включает `https://ege-pro.vercel.app`.
-3. Быстрая проверка CORS (см. также [README](../README.md)):
+## 6) Проверка после деплоя
+
+### Backend health
 
 ```bash
-curl -i -X OPTIONS "https://<api-host>/api/health" \
-  -H "Origin: https://ege-pro.vercel.app" \
+curl https://api.<домен>/api/health
+```
+
+Ожидание: `status: ok`.
+
+### CORS
+
+```bash
+curl -i -X OPTIONS "https://api.<домен>/api/health" \
+  -H "Origin: https://app.<домен>" \
   -H "Access-Control-Request-Method: GET"
 ```
 
-Должен быть допустимый ответ и заголовок `Access-Control-Allow-Origin` для origin фронта.
+Ожидание: `Access-Control-Allow-Origin: https://app.<домен>`.
+
+### Prisma migrations
+
+Если логин падает с `P2021` (`public.User does not exist`), проверь:
+
+1. Деплой действительно из свежего коммита.
+2. В образ попала папка `backend/src/database/prisma/migrations`.
+3. Логи старта backend содержат успешный `prisma migrate deploy`.
+
+Ручная проверка внутри контейнера backend:
+
+```bash
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+docker exec <backend_container_name> sh -c "cd /app/backend && npx prisma migrate deploy"
+```
+
+## 7) Типовые проблемы и быстрые фиксы
+
+### `ECONNREFUSED 127.0.0.1:6379`
+
+Причина: неверный `REDIS_URL`.
+Фикс: поставь internal URL Redis resource из Coolify.
+
+### `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR`
+
+Причина: не включён trust proxy.
+Фикс: `TRUST_PROXY=1` и redeploy backend.
+
+### `No migration found in prisma/migrations`
+
+Причина: старый образ или неправильный путь миграций.
+Фикс: деплой свежего коммита, где миграции лежат в `backend/src/database/prisma/migrations`.
+
+### Контейнер "пропадает"
+
+После redeploy имя контейнера меняется.
+Фикс: всегда сначала `docker ps`, потом `docker exec` с актуальным именем.
+
+## 8) Обновления приложения
+
+Обычный цикл:
+
+1. `git push` в `master`.
+2. Coolify автодеплой (или manual Deploy).
+3. Проверка `/api/health` и ключевого бизнес-сценария (например `/api/auth/telegram`).
+
+## 9) Рекомендации по прод-эксплуатации
+
+- Включи healthcheck/alerts в Coolify.
+- Делай бэкапы Postgres (ежедневно + хранение минимум 7 дней).
+- Не публикуй наружу порты Postgres/Redis.
+- Секреты держи только в Coolify Variables, не в Git.
