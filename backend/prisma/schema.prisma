@@ -39,10 +39,28 @@ model User {
   dailySolves  DailySolve[]
   clanMembers   ClanMember[]
   ownedClans    Clan[]          @relation("ClanOwner")
-  clanMessages  ClanMessage[]
-  feedbacks     ProblemFeedback[]
+  clanMessages   ClanMessage[]
+  feedbacks      ProblemFeedback[]
+  paymentIntents PaymentIntent[]
 
   @@index([lastActiveDate])
+}
+
+model PaymentIntent {
+  id                       String    @id @default(cuid())
+  userId                   String
+  user                     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind                     String    @default("premium_month")
+  status                   String    @default("pending")
+  currency                 String    @default("RUB")
+  totalAmountMinor         Int
+  telegramPaymentChargeId  String?
+  providerPaymentChargeId  String?
+  createdAt                DateTime  @default(now())
+  completedAt              DateTime?
+
+  @@index([userId, status])
+  @@index([status])
 }
 
 model Subject {

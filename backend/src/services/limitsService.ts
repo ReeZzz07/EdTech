@@ -1,10 +1,11 @@
 import { prisma } from "../database/client";
 import { gamificationConfig } from "../config/gamification";
+import { userHasActivePremium } from "./premiumService";
 import { startOfUtcDay } from "../utils/dateUtc";
 import { HttpError } from "../utils/httpError";
 
-function dailyLimitForUser(isPremium: boolean) {
-  if (isPremium) return Number.POSITIVE_INFINITY;
+function dailyLimitForUser(isPremiumActive: boolean) {
+  if (isPremiumActive) return Number.POSITIVE_INFINITY;
   return gamificationConfig.freeDailySolveLimit;
 }
 
@@ -14,7 +15,7 @@ function dailyLimitForUser(isPremium: boolean) {
 export async function assertCanCreateProblem(userId: string) {
   const u = await prisma.user.findUnique({ where: { id: userId } });
   if (!u) throw new HttpError("User not found", 404, "not_found");
-  const limit = dailyLimitForUser(u.isPremium);
+  const limit = dailyLimitForUser(userHasActivePremium(u));
   if (!Number.isFinite(limit)) return;
   const start = startOfUtcDay(new Date());
   const n = await prisma.problem.count({

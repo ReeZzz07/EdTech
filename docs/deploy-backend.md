@@ -75,6 +75,21 @@
 
 Уведомления в Telegram (достижения): при наличии `TELEGRAM_BOT_TOKEN` и Redis поднимается воркер очереди `notifications`; пользователь должен хотя бы раз открыть бота / не блокировать его (иначе `sendMessage` вернёт ошибку).
 
+**Telegram Payments (Premium):**
+
+- `TELEGRAM_PAYMENT_PROVIDER_TOKEN` — токен провайдера из [@BotFather](https://t.me/BotFather) → ваш бот → Payments (тестовый или боевой).
+- `TELEGRAM_WEBHOOK_SECRET` — случайная строка; **тот же** секрет указывается при привязке webhook к боту.
+- Опционально: `PREMIUM_PRICE_RUB` (по умолчанию `399`), `PREMIUM_DURATION_DAYS` (по умолчанию `30`).
+- Webhook (HTTPS): URL **`https://api.<домен>/api/telegram/webhook`**. Пример вызова после деплоя API:
+
+```bash
+curl -sS -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d "{\"url\":\"https://api.<домен>/api/telegram/webhook\",\"secret_token\":\"<TELEGRAM_WEBHOOK_SECRET>\"}"
+```
+
+Без `TELEGRAM_WEBHOOK_SECRET` эндпоинт отвечает `503`; без провайдер-токена счёт не создаётся (`invoiceAvailable: false` на клиенте).
+
 Критично:
 
 - `REDIS_URL` не должен быть `127.0.0.1:6379`.

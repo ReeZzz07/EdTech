@@ -1,6 +1,7 @@
 import type { User } from "@prisma/client";
 import { prisma } from "../database/client";
 import { gamificationConfig } from "../config/gamification";
+import { userHasActivePremium } from "../services/premiumService";
 import { startOfUtcDay } from "./dateUtc";
 import { userToJson } from "./userDto";
 
@@ -10,9 +11,11 @@ export async function userPayloadWithUsage(user: User) {
   const attemptsToday = await prisma.problem.count({
     where: { userId: user.id, createdAt: { gte: start } },
   });
-  const dailySolveLimit = user.isPremium ? null : gamificationConfig.freeDailySolveLimit;
+  const premiumActive = userHasActivePremium(user);
+  const dailySolveLimit = premiumActive ? null : gamificationConfig.freeDailySolveLimit;
   return {
     ...userToJson(user),
+    isPremium: premiumActive,
     attemptsToday,
     dailySolveLimit,
     xpPerLevel: gamificationConfig.xpPerLevel,

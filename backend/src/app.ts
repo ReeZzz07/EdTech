@@ -8,8 +8,10 @@ import { clansRouter } from "./routes/clans";
 import { coinsRouter } from "./routes/coins";
 import { filesRouter } from "./routes/files";
 import { healthRouter } from "./routes/health";
+import { paymentsRouter } from "./routes/payments";
 import { problemsRouter } from "./routes/problems";
 import { subjectsRouter } from "./routes/subjects";
+import { telegramWebhookRouter } from "./routes/telegramWebhook";
 import { userRouter } from "./routes/user";
 import { logger } from "./utils/logger";
 
@@ -45,7 +47,8 @@ app.use(
   pinoHttp({
     logger,
     autoLogging: {
-      ignore: (req) => req.url === "/api/health" || req.url === "/",
+      ignore: (req) =>
+        req.url === "/api/health" || req.url === "/" || req.url.startsWith("/api/telegram/webhook"),
     },
   }),
 );
@@ -55,12 +58,14 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/health", healthRouter);
+app.use("/api/telegram/webhook", telegramWebhookRouter);
 app.use("/api", apiRateLimit);
 app.use("/api/auth", authRouter);
 app.use("/api/subjects", subjectsRouter);
 app.use("/api/problems", problemsRouter);
 app.use("/api/user", userRouter);
 app.use("/api/coins", coinsRouter);
+app.use("/api/payments", paymentsRouter);
 app.use("/api/clans", clansRouter);
 app.use("/api/files", filesRouter);
 
