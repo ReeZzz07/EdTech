@@ -1,11 +1,13 @@
 import { HttpError } from "../utils/httpError";
 
-const PRICES: Record<string, { price: number; label: string }> = {
-  hint: { price: 50, label: "Подсказка к заданию" },
-  extra_solution: { price: 80, label: "Доп. разбор" },
-  theme_aurora: { price: 300, label: "Тема: Aurora" },
-  clan_create: { price: 200, label: "Создать клан" },
-  premium_month_token: { price: 2000, label: "Premium (упрощ. за токены)" },
+export type ShopCategory = "help" | "custom" | "premium";
+
+const PRICES: Record<string, { price: number; label: string; category: ShopCategory }> = {
+  hint: { price: 50, label: "Подсказка к заданию", category: "help" },
+  extra_solution: { price: 80, label: "Доп. разбор", category: "help" },
+  theme_aurora: { price: 300, label: "Тема: Aurora", category: "custom" },
+  clan_create: { price: 200, label: "Создать клан", category: "premium" },
+  premium_month_token: { price: 2000, label: "Premium (упрощ. за токены)", category: "premium" },
 };
 
 export function getShopItem(itemId: string) {

@@ -16,6 +16,7 @@ subjectsRouter.get(
         isEnabled: s.isEnabled,
         sortOrder: s.sortOrder,
         fipiSpecKey: s.fipiSpecKey,
+        skillMap: s.skillMap,
         createdAt: s.createdAt,
         updatedAt: s.updatedAt,
       })),

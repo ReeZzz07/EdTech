@@ -76,3 +76,28 @@ export async function clanLeaderboard(clanId: string) {
     .map((x) => ({ user: x.user, role: x.role, joinedAt: x.joinedAt }))
     .sort((a, b) => b.user.totalProblemsSolved - a.user.totalProblemsSolved);
 }
+
+/** Топ публичных кланов по сумме решённых задач участников (MVP). */
+export async function globalClanLeaderboard(take = 20) {
+  const clans = await prisma.clan.findMany({
+    where: { isPublic: true },
+    include: {
+      members: {
+        include: { user: { select: { totalProblemsSolved: true } } },
+      },
+      _count: { select: { members: true } },
+    },
+    take: 120,
+    orderBy: { createdAt: "desc" },
+  });
+
+  return clans
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      memberCount: c._count.members,
+      score: c.members.reduce((s, m) => s + m.user.totalProblemsSolved, 0),
+    }))
+    .sort((a, b) => b.score - a.score || b.memberCount - a.memberCount)
+    .slice(0, take);
+}

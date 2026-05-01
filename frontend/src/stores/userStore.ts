@@ -1,19 +1,7 @@
-import axios from "axios";
 import { create } from "zustand";
 import { api, getStoredToken, setAuthToken } from "../services/api";
 import type { UserDto } from "../types/api";
-
-function apiErrorToMessage(err: unknown): string {
-  if (axios.isAxiosError(err)) {
-    const body = err.response?.data as { error?: { message?: string } } | undefined;
-    const m = body?.error?.message;
-    if (typeof m === "string" && m.trim()) return m.trim();
-    const status = err.response?.status;
-    if (status) return `Ошибка сервера (${status})`;
-  }
-  if (err instanceof Error) return err.message;
-  return "Не удалось выполнить запрос";
-}
+import { getApiErrorMeta } from "../utils/apiError";
 
 type State = {
   user: UserDto | null;
@@ -48,7 +36,7 @@ export const useUserStore = create<State>((set, get) => ({
       await get().refreshMe();
     } catch (e) {
       setAuthToken(null);
-      set({ error: apiErrorToMessage(e), user: null });
+      set({ error: getApiErrorMeta(e).message, user: null });
       throw e;
     } finally {
       set({ loading: false });
@@ -63,7 +51,7 @@ export const useUserStore = create<State>((set, get) => ({
       set({ user: data.user });
     } catch (e) {
       setAuthToken(null);
-      set({ error: apiErrorToMessage(e), user: null });
+      set({ error: getApiErrorMeta(e).message, user: null });
       throw e;
     } finally {
       set({ loading: false });

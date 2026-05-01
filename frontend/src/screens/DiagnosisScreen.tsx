@@ -10,12 +10,25 @@ type DiagnosisRes = {
   diagnosis: null | {
     overallScore: number;
     coinsEarned: number;
-    steps: unknown[];
-    recommendations: unknown[];
-    errors: unknown[];
+    steps: unknown;
+    recommendations: unknown;
+    errors: unknown;
   };
-  problem?: { imageUrl: string };
+  problem?: {
+    id?: string;
+    subjectId?: string;
+    imageUrl: string;
+    subject?: { name: string; code: string };
+  };
 };
+
+function isStepRecord(s: unknown): s is { description?: string; stepNumber?: number; feedback?: string; isCorrect?: boolean } {
+  return typeof s === "object" && s !== null;
+}
+
+function isRecRecord(r: unknown): r is { title?: string; action?: string } {
+  return typeof r === "object" && r !== null;
+}
 
 export function DiagnosisScreen() {
   const { problemId } = useParams<{ problemId: string }>();
@@ -51,6 +64,18 @@ export function DiagnosisScreen() {
         setPhase("done");
         await refreshMe();
         capture("diagnosis_viewed", { problemId });
+        if (data.diagnosis && data.problem?.subjectId) {
+          capture("problem_solved", {
+            problemId,
+            subjectId: data.problem.subjectId,
+            score: data.diagnosis.overallScore,
+          });
+          capture("coins_earned", {
+            problemId,
+            amount: data.diagnosis.coinsEarned,
+            source: "diagnosis",
+          });
+        }
       } catch {
         if (!cancelled) setPhase("error");
       }
@@ -87,34 +112,81 @@ export function DiagnosisScreen() {
 
   const d = payload.diagnosis;
   const img = payload.problem?.imageUrl;
+  const stepsArr = Array.isArray(d.steps) ? d.steps : [];
+  const recArr = Array.isArray(d.recommendations) ? d.recommendations : [];
+  const errArr = Array.isArray(d.errors) ? d.errors : [];
 
   return (
     <div className="min-h-[100dvh] bg-[var(--tg-theme-bg-color,#fff)] p-4 pb-10">
       {img && <img src={img} alt="задача" className="mb-4 max-h-48 w-full rounded-xl object-contain" />}
       <div className="mb-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+        <p className="text-sm text-zinc-500">{payload.problem?.subject?.name ?? "Разбор"}</p>
         <p className="text-sm text-zinc-500">Оценка</p>
         <p className="text-3xl font-bold">{d.overallScore}</p>
         <p className="text-sm text-amber-600">+{d.coinsEarned} EGC</p>
       </div>
+
+      {errArr.length > 0 && (
+        <>
+          <h3 className="mb-2 font-semibold">Замечания</h3>
+          <ul className="mb-6 space-y-2">
+            {errArr.map((raw, i) => (
+              <li key={i} className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/30">
+                {typeof raw === "string" ? raw : JSON.stringify(raw)}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       <h3 className="mb-2 font-semibold">Шаги</h3>
       <ul className="space-y-2">
-        {(Array.isArray(d.steps) ? d.steps : []).map((s, i) => (
-          <li key={i} className="rounded-lg border border-zinc-200 p-3 text-sm">
-            <pre className="whitespace-pre-wrap font-sans">{JSON.stringify(s, null, 2)}</pre>
+        {stepsArr.map((raw, i) => (
+          <li key={i} className="rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-700">
+            {isStepRecord(raw) ? (
+              <>
+                <p className="font-medium">
+                  Шаг {raw.stepNumber ?? i + 1}
+                  {typeof raw.isCorrect === "boolean" ? (
+                    <span className={raw.isCorrect ? " text-emerald-600" : " text-red-600"}>
+                      {" "}
+                      · {raw.isCorrect ? "верно" : "есть ошибки"}
+                    </span>
+                  ) : null}
+                </p>
+                <p className="mt-1 text-zinc-700 dark:text-zinc-200">{raw.description ?? "—"}</p>
+                {raw.feedback ? <p className="mt-1 text-xs text-zinc-500">{raw.feedback}</p> : null}
+              </>
+            ) : (
+              <pre className="whitespace-pre-wrap font-sans">{JSON.stringify(raw, null, 2)}</pre>
+            )}
           </li>
         ))}
       </ul>
+
       <h3 className="mb-2 mt-6 font-semibold">Рекомендации</h3>
-      <ul className="space-y-2 text-sm text-zinc-700">
-        {(Array.isArray(d.recommendations) ? d.recommendations : []).map((r, i) => (
-          <li key={i}>{JSON.stringify(r)}</li>
+      <ul className="space-y-2 text-sm text-zinc-700 dark:text-zinc-200">
+        {recArr.map((raw, i) => (
+          <li key={i} className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 dark:border-blue-900 dark:bg-blue-950/25">
+            {isRecRecord(raw) ? (
+              <>
+                <p className="font-medium">{raw.title ?? "Шаг"}</p>
+                {raw.action ? <p className="mt-1 text-xs text-zinc-600">{raw.action}</p> : null}
+              </>
+            ) : typeof raw === "string" ? (
+              raw
+            ) : (
+              JSON.stringify(raw)
+            )}
+          </li>
         ))}
       </ul>
+
       <div className="mt-8 flex flex-wrap gap-2">
-        <button type="button" className="rounded-xl border border-zinc-300 px-4 py-2 text-sm" onClick={() => navigate("/camera")}>
+        <button type="button" className="rounded-xl border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600" onClick={() => navigate("/camera")}>
           Похожая
         </button>
-        <button type="button" className="rounded-xl border border-zinc-300 px-4 py-2 text-sm" onClick={() => navigate("/")}>
+        <button type="button" className="rounded-xl border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600" onClick={() => navigate("/")}>
           Главная
         </button>
       </div>

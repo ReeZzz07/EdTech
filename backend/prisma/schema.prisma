@@ -37,9 +37,10 @@ model User {
   transactions CoinTransaction[]
   achievements UserAchievement[]
   dailySolves  DailySolve[]
-  clanMembers  ClanMember[]
-  ownedClans   Clan[]          @relation("ClanOwner")
-  feedbacks    ProblemFeedback[]
+  clanMembers   ClanMember[]
+  ownedClans    Clan[]          @relation("ClanOwner")
+  clanMessages  ClanMessage[]
+  feedbacks     ProblemFeedback[]
 
   @@index([lastActiveDate])
 }
@@ -174,9 +175,22 @@ model Clan {
   challengeJson Json?
 
   createdAt DateTime @default(now())
-  members ClanMember[]
+  members   ClanMember[]
+  messages  ClanMessage[]
 
   @@index([isPublic, name])
+}
+
+model ClanMessage {
+  id        String   @id @default(cuid())
+  clanId    String
+  clan      Clan     @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String   @db.VarChar(2000)
+  createdAt DateTime @default(now())
+
+  @@index([clanId, createdAt])
 }
 
 model ClanMember {

@@ -5,6 +5,7 @@ import { requireAuth } from "../middleware/auth";
 import { getUserProgress } from "../services/userProgressService";
 import { asyncHandler } from "../utils/asyncHandler";
 import { HttpError } from "../utils/httpError";
+import { getSkillSummaryForUser } from "../services/skillSummaryService";
 import { userToJson } from "../utils/userDto";
 
 export const userRouter = Router();
@@ -30,6 +31,16 @@ userRouter.get(
   asyncHandler(async (req, res) => {
     const list = await prisma.userAchievement.findMany({ where: { userId: req.authUserId! } });
     res.json({ items: list });
+  }),
+);
+
+userRouter.get(
+  "/skill-summary",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const q = z.object({ subjectId: z.string().min(1) }).parse(req.query);
+    const items = await getSkillSummaryForUser(req.authUserId!, q.subjectId);
+    res.json({ items });
   }),
 );
 

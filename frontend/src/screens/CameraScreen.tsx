@@ -2,8 +2,10 @@ import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, type CameraType } from "react-camera-pro";
 import { api } from "../services/api";
+import { capture as captureEvent } from "../services/analytics";
 import { haptic } from "../services/telegram";
 import { useSubjectStore } from "../stores/subjectStore";
+import { getApiErrorMeta } from "../utils/apiError";
 
 export function CameraScreen() {
   const navigate = useNavigate();
@@ -11,6 +13,7 @@ export function CameraScreen() {
   const cam = useRef<CameraType>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [limitHit, setLimitHit] = useState(false);
 
   const uploadBlob = useCallback(
     async (blob: Blob) => {
@@ -21,14 +24,22 @@ export function CameraScreen() {
       const fd = new FormData();
       fd.append("image", blob, "capture.jpg");
       fd.append("subjectId", selectedId);
-      const { data } = await api.post<{ problemId: string; status: string }>("/api/problems/upload", fd);
-      navigate(`/diagnosis/${data.problemId}`, { replace: true });
+      try {
+        const { data } = await api.post<{ problemId: string; status: string }>("/api/problems/upload", fd);
+        captureEvent("problem_upload_started", { subjectId: selectedId, problemId: data.problemId });
+        navigate(`/diagnosis/${data.problemId}`, { replace: true });
+      } catch (e) {
+        const meta = getApiErrorMeta(e);
+        setLimitHit(meta.code === "daily_limit");
+        throw new Error(meta.message);
+      }
     },
     [navigate, selectedId],
   );
 
   async function capture() {
     setErr(null);
+    setLimitHit(false);
     setBusy(true);
     haptic("medium");
     try {
@@ -37,8 +48,7 @@ export function CameraScreen() {
       const blob = await fetch(photo).then((r) => r.blob());
       await uploadBlob(blob);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Ошибка";
-      setErr(msg);
+      setErr(e instanceof Error ? e.message : "Ошибка");
     } finally {
       setBusy(false);
     }
@@ -63,7 +73,24 @@ export function CameraScreen() {
           Выровняй задачу в рамке · текст должен быть читаемым
         </p>
       </div>
-      {err && <p className="absolute left-4 right-4 top-4 rounded bg-red-600/90 p-2 text-center text-sm text-white">{err}</p>}
+      {err && (
+        <div className="absolute left-4 right-4 top-4 space-y-2">
+          <p className="rounded bg-red-600/90 p-2 text-center text-sm text-white">{err}</p>
+          {limitHit ? (
+            <div className="flex gap-2 rounded bg-black/80 p-2 text-xs text-white">
+              <button type="button" className="flex-1 rounded bg-amber-500 py-2 font-medium text-black" onClick={() => navigate("/premium")}>
+                Premium
+              </button>
+              <button type="button" className="flex-1 rounded bg-white/20 py-2" onClick={() => navigate("/shop")}>
+                Магазин
+              </button>
+              <button type="button" className="flex-1 rounded bg-white/20 py-2" onClick={() => navigate("/")}>
+                Домой
+              </button>
+            </div>
+          ) : null}
+        </div>
+      )}
       <div className="flex gap-3 border-t border-white/10 bg-black/80 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <button type="button" className="flex-1 rounded-xl bg-zinc-700 py-4 text-white" onClick={() => navigate(-1)}>
           Назад
@@ -83,10 +110,13 @@ export function CameraScreen() {
             const f = e.target.files?.[0];
             if (!f) return;
             setBusy(true);
+            setLimitHit(false);
             try {
               await uploadBlob(f);
             } catch (ex) {
-              setErr(ex instanceof Error ? ex.message : "Ошибка");
+              const meta = getApiErrorMeta(ex);
+              setLimitHit(meta.code === "daily_limit");
+              setErr(meta.message);
             } finally {
               setBusy(false);
             }

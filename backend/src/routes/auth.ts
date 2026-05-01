@@ -8,7 +8,7 @@ import { authRateLimit } from "../middleware/rateLimit";
 import { signAccessToken } from "../utils/authTokens";
 import { asyncHandler } from "../utils/asyncHandler";
 import { HttpError } from "../utils/httpError";
-import { userToJson } from "../utils/userDto";
+import { userPayloadWithUsage } from "../utils/userPayload";
 import { parseAndValidateInitData } from "../utils/validateTelegramInitData";
 
 export const authRouter = Router();
@@ -56,7 +56,8 @@ authRouter.post(
     });
 
     const token = signAccessToken(user.id, user.telegramId.toString());
-    res.json({ token, user: userToJson(user) });
+    const payload = await userPayloadWithUsage(user);
+    res.json({ token, user: payload });
   }),
 );
 
@@ -64,6 +65,7 @@ authRouter.get(
   "/me",
   requireAuth,
   asyncHandler(async (req, res) => {
-    res.json({ user: userToJson(req.authUser!) });
+    const payload = await userPayloadWithUsage(req.authUser!);
+    res.json({ user: payload });
   }),
 );

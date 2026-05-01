@@ -96,6 +96,7 @@ problemsRouter.get(
       status: p.status,
       problem: {
         id: p.id,
+        subjectId: p.subjectId,
         imageUrl: p.imageUrl,
         topic: p.topic,
         difficulty: p.difficulty,

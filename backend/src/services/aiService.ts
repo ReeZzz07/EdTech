@@ -67,9 +67,15 @@ function mockResult(subject: string, bytes: number): DiagnosisResultAI {
     recommendations: [
       { title: isRu ? "Повторить правила орфоэпии" : "Повторить логарифмы", action: "open_topic" },
     ],
-    skillAssessment: [
-      { skillId: isRu ? "russian.ortho" : "math.algebra", score: 55, note: "mock" },
-    ],
+    skillAssessment: isRu
+      ? [
+          { skillId: "russian.ortho", score: 55, note: "mock" },
+          { skillId: "russian.punctuation", score: 62, note: "mock" },
+        ]
+      : [
+          { skillId: "math.algebra", score: 58, note: "mock" },
+          { skillId: "math.geometry", score: 44, note: "mock" },
+        ],
     coinsBase: 50,
   };
 }

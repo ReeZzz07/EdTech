@@ -2,10 +2,12 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../database/client";
 import { requireAuth } from "../middleware/auth";
+import { listClanMessages, postClanMessage } from "../services/clanChatService";
 import {
   clanLeaderboard,
   createClan,
   getMyClan,
+  globalClanLeaderboard,
   joinClan,
   leaveClan,
   listClansForUser,
@@ -32,6 +34,15 @@ clansRouter.get(
         createdAt: c.createdAt,
       })),
     });
+  }),
+);
+
+clansRouter.get(
+  "/leaderboard/global",
+  requireAuth,
+  asyncHandler(async (_req, res) => {
+    const items = await globalClanLeaderboard(25);
+    res.json({ items });
   }),
 );
 
@@ -84,6 +95,43 @@ clansRouter.delete(
   asyncHandler(async (req, res) => {
     await leaveClan(req.authUserId!, req.params.id);
     res.json({ ok: true });
+  }),
+);
+
+clansRouter.get(
+  "/:id/messages",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const member = await prisma.clanMember.findFirst({ where: { userId: req.authUserId!, clanId: req.params.id } });
+    if (!member) {
+      throw new HttpError("Нет доступа к клану", 403, "forbidden");
+    }
+    const rows = await listClanMessages(req.params.id);
+    res.json({
+      items: rows.reverse().map((m) => ({
+        id: m.id,
+        body: m.body,
+        createdAt: m.createdAt,
+        user: m.user,
+      })),
+    });
+  }),
+);
+
+clansRouter.post(
+  "/:id/messages",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const b = z.object({ body: z.string().min(1).max(2000) }).parse(req.body);
+    const msg = await postClanMessage(req.authUserId!, req.params.id, b.body);
+    res.json({
+      message: {
+        id: msg.id,
+        body: msg.body,
+        createdAt: msg.createdAt,
+        user: msg.user,
+      },
+    });
   }),
 );
 
