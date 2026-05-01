@@ -13,7 +13,7 @@
     "format": "prettier -w \"src/**/*.ts\""
   },
   "prisma": {
-    "schema": "src/database/schema.prisma",
+    "schema": "prisma/schema.prisma",
     "seed": "tsx src/database/seed.ts"
   },
   "dependencies": {

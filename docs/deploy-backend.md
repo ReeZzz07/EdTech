@@ -166,7 +166,7 @@ curl -i -X OPTIONS "https://api.<домен>/api/health" \
 Если логин падает с `P2021` (`public.User does not exist`), проверь:
 
 1. Деплой действительно из свежего коммита.
-2. В образ попала папка `backend/src/database/prisma/migrations`.
+2. В образ попала папка `backend/prisma/migrations`.
 3. Логи старта backend содержат успешный `prisma migrate deploy`.
 
 Ручная проверка внутри контейнера backend:
@@ -191,7 +191,7 @@ docker exec <backend_container_name> sh -c "cd /app/backend && npx prisma migrat
 ### `No migration found in prisma/migrations`
 
 Причина: старый образ или неправильный путь миграций.
-Фикс: деплой свежего коммита, где миграции лежат в `backend/src/database/prisma/migrations`.
+Фикс: деплой свежего коммита; миграции лежат в `backend/prisma/migrations`, схема — `backend/prisma/schema.prisma`.
 
 ### Контейнер "пропадает"
 

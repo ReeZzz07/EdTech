@@ -1,10 +1,11 @@
 # ВНИМАНИЕ: для монорепо и Coolify используй корневой `Dockerfile` в репозитории (контекст `.`).
-# Этот файл — только для локального `docker build ./backend`; миграции лежат в `src/database/prisma/migrations`.
+# Этот файл — только для локального `docker build ./backend`; схема и миграции в `prisma/`.
 FROM node:20-alpine
 WORKDIR /app
 COPY package.json ./
 RUN npm install
 COPY tsconfig.json ./
+COPY prisma ./prisma
 COPY src ./src
 RUN npx prisma generate && npm run build && npm prune --omit=dev
 EXPOSE 3000
