@@ -1,8 +1,12 @@
 import "dotenv/config";
+import { initBackendSentry } from "./instrument";
 import { app } from "./app";
 import { databaseConfig, yandexGptConfig } from "./config";
 import { startDiagnosisWorker } from "./jobs/diagnosisJob";
+import { startNotificationWorker } from "./jobs/notificationJob";
 import { logger } from "./utils/logger";
+
+initBackendSentry();
 
 if (!databaseConfig.url) {
   logger.warn("DATABASE_URL не задан — Prisma/миграции не сработают");
@@ -13,6 +17,7 @@ if (!yandexGptConfig.folderId && !yandexGptConfig.apiKey) {
 
 if (process.env.DISABLE_BULL !== "1") {
   startDiagnosisWorker();
+  startNotificationWorker();
 }
 
 const port = Number(process.env.PORT) || 3000;

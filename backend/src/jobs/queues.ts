@@ -39,3 +39,29 @@ export async function enqueueDiagnosis(problemId: string) {
     return undefined;
   }
 }
+
+export type NotificationJobData = { telegramId: string; text: string };
+
+const notificationQ = new Bull<NotificationJobData>("notifications", {
+  redis,
+  defaultJobOptions: {
+    removeOnComplete: 300,
+    removeOnFail: 120,
+    attempts: 5,
+    backoff: { type: "exponential", delay: 3000 },
+  },
+});
+
+notificationQ.on("error", (e: Error) => logger.error({ e }, "notification queue error"));
+
+export { notificationQ };
+
+/** Ставит сообщение в очередь (воркер не стартует без TELEGRAM_BOT_TOKEN). */
+export async function enqueueTelegramNotification(telegramId: string, text: string) {
+  if (!process.env.TELEGRAM_BOT_TOKEN?.trim()) return;
+  try {
+    await notificationQ.add({ telegramId, text });
+  } catch (e) {
+    logger.warn({ e, telegramId }, "notification queue unavailable");
+  }
+}

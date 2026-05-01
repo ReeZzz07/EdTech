@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../database/client";
 import { gamificationConfig } from "../config/gamification";
+import { enqueueTelegramNotification } from "../jobs/queues";
 import { utcDayKey } from "../utils/dayKey";
 import { logger } from "../utils/logger";
 
@@ -9,6 +10,14 @@ const ACH = {
   STREAK7: "streak_7",
   HUNDRED: "hundred_problems",
 } as const;
+
+const ACH_TITLES: Record<string, string> = {
+  [ACH.FIRST]: "Первое решение",
+  [ACH.STREAK7]: "Неделя подряд",
+  [ACH.HUNDRED]: "Сто задач",
+};
+
+type PendingTelegram = { telegramId: string; text: string };
 
 function ymd(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -25,7 +34,8 @@ function yesterdayYmd() {
  * Начисление XP/уровня, streak, achievements после успешного диагноза
  */
 export async function onProblemDiagnosed(input: { userId: string; problemId: string; overallScore: number }) {
-  return prisma.$transaction(async (tx) => {
+  const pendingTelegram: PendingTelegram[] = [];
+  await prisma.$transaction(async (tx) => {
     const u = await tx.user.findUnique({ where: { id: input.userId } });
     if (!u) return;
     const dayKey = utcDayKey();
@@ -71,18 +81,27 @@ export async function onProblemDiagnosed(input: { userId: string; problemId: str
     });
 
     if (u.totalProblemsSolved === 0) {
-      await unlock(tx, input.userId, ACH.FIRST, 200);
+      await unlock(tx, input.userId, ACH.FIRST, 200, pendingTelegram);
     }
     if (newStreak >= 7) {
-      await unlock(tx, input.userId, ACH.STREAK7, 200);
+      await unlock(tx, input.userId, ACH.STREAK7, 200, pendingTelegram);
     }
     if (totalSolved >= 100) {
-      await unlock(tx, input.userId, ACH.HUNDRED, 200);
+      await unlock(tx, input.userId, ACH.HUNDRED, 200, pendingTelegram);
     }
   });
+  for (const n of pendingTelegram) {
+    void enqueueTelegramNotification(n.telegramId, n.text);
+  }
 }
 
-async function unlock(tx: Prisma.TransactionClient, userId: string, code: string, bonus: number) {
+async function unlock(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  code: string,
+  bonus: number,
+  pendingTelegram: PendingTelegram[],
+) {
   const existing = await tx.userAchievement.findUnique({ where: { userId_code: { userId, code } } });
   if (existing) return;
   await tx.userAchievement.create({ data: { userId, code } });
@@ -94,4 +113,12 @@ async function unlock(tx: Prisma.TransactionClient, userId: string, code: string
   } catch (e) {
     logger.error({ e, userId, code }, "achievement coin grant failed");
   }
+
+  const u = await tx.user.findUnique({ where: { id: userId }, select: { telegramId: true } });
+  if (!u) return;
+  const title = ACH_TITLES[code] ?? code;
+  pendingTelegram.push({
+    telegramId: u.telegramId.toString(),
+    text: `Новое достижение: «${title}». Начислено +${bonus} EGC.`,
+  });
 }

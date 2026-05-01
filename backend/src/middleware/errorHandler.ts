@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
+import { captureSentryExceptionIfUseful } from "../instrument";
 import { HttpError } from "../utils/httpError";
 import { logger } from "../utils/logger";
 
@@ -10,11 +11,13 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return res.status(400).json({ error: { message: "Validation error", code: "validation", details: err.flatten() } });
   }
   if (err instanceof HttpError) {
+    captureSentryExceptionIfUseful(err);
     return res.status(err.status).json({ error: { message: err.message, code: err.code } });
   }
   const e = err as ErrWithStatus;
   const status = typeof e.status === "number" ? e.status : 500;
   const message = e instanceof Error && e.message ? e.message : "Internal Server Error";
+  captureSentryExceptionIfUseful(err, status);
   if (status >= 500) {
     logger.error({ err: e, stack: e?.stack });
   }

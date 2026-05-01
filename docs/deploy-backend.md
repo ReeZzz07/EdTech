@@ -71,6 +71,9 @@
 - `INTERNAL_COIN_EARN_KEY`
 - `AWS_*`
 - `YANDEX_*`
+- `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` — ошибки API в Sentry (ожидаемые 4xx не шлются).
+
+Уведомления в Telegram (достижения): при наличии `TELEGRAM_BOT_TOKEN` и Redis поднимается воркер очереди `notifications`; пользователь должен хотя бы раз открыть бота / не блокировать его (иначе `sendMessage` вернёт ошибку).
 
 Критично:
 
@@ -132,6 +135,7 @@ server {
 ### Environment variables (frontend)
 
 - `VITE_API_BASE=https://api.<домен>`
+- опционально: `VITE_SENTRY_DSN`, `VITE_SENTRY_TRACES_SAMPLE_RATE` — ошибки рантайма в браузере.
 
 ## 5) Порядок первого деплоя
 
