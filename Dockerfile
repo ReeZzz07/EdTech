@@ -10,6 +10,11 @@ COPY backend ./backend
 RUN test -n "$(find backend/src/database/prisma/migrations -name migration.sql | head -n1)" \
   || (echo "FATAL: нет SQL миграций в образе (путь backend/src/database/prisma/migrations)" && exit 1)
 
+# Prisma CLI при schema в подкаталоге всё равно ищет историю в backend/prisma/migrations относительно package.json.
+RUN mkdir -p backend/prisma \
+  && ln -sfn ../src/database/prisma/migrations backend/prisma/migrations \
+  && test -f backend/prisma/migrations/migration_lock.toml
+
 RUN npm ci --include=dev && npm run db:generate -w backend && npm run build -w backend
 
 ENV NODE_ENV=production
