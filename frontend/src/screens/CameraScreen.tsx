@@ -77,25 +77,34 @@ export function CameraScreen() {
         <div className="absolute left-4 right-4 top-4 space-y-2">
           <p className="rounded bg-red-600/90 p-2 text-center text-sm text-white">{err}</p>
           {limitHit ? (
-            <div className="flex gap-2 rounded bg-black/80 p-2 text-xs text-white">
+            <div className="flex gap-2 rounded-lg border border-white/15 bg-black/80 p-2 text-xs text-white">
               <button type="button" className="flex-1 rounded bg-amber-500 py-2 font-medium text-black" onClick={() => navigate("/premium")}>
                 Premium
               </button>
-              <button type="button" className="flex-1 rounded bg-white/20 py-2" onClick={() => navigate("/shop")}>
+              <button type="button" className="flex-1 rounded bg-white/20 py-2 text-white" onClick={() => navigate("/shop")}>
                 Магазин
               </button>
-              <button type="button" className="flex-1 rounded bg-white/20 py-2" onClick={() => navigate("/")}>
+              <button type="button" className="flex-1 rounded bg-white/20 py-2 text-white" onClick={() => navigate("/")}>
                 Домой
               </button>
             </div>
           ) : null}
         </div>
       )}
-      <div className="flex gap-3 border-t border-white/10 bg-black/80 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <button type="button" className="flex-1 rounded-xl bg-zinc-700 py-4 text-white" onClick={() => navigate(-1)}>
+      <div className="flex gap-3 border-t border-white/10 bg-black/85 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm">
+        <button
+          type="button"
+          className="flex-1 rounded-xl border border-white/20 bg-white/10 py-4 text-white"
+          onClick={() => navigate(-1)}
+        >
           Назад
         </button>
-        <button type="button" disabled={busy} className="flex-[2] rounded-xl bg-blue-600 py-4 font-semibold text-white disabled:opacity-50" onClick={() => void capture()}>
+        <button
+          type="button"
+          disabled={busy}
+          className="flex-[2] rounded-xl bg-tg-link py-4 font-semibold text-[var(--tg-theme-button-text-color,#fff)] disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={() => void capture()}
+        >
           {busy ? "Отправка…" : "Снимок"}
         </button>
       </div>

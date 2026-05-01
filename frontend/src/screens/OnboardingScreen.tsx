@@ -26,7 +26,7 @@ export function OnboardingScreen() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-[var(--tg-theme-bg-color,#fff)] p-6 pb-10">
+    <div className="flex min-h-[100dvh] flex-col bg-tg-bg p-6 pb-10 text-tg-text">
       <div className="flex flex-1 flex-col justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -37,8 +37,8 @@ export function OnboardingScreen() {
             transition={{ duration: 0.25 }}
             className="space-y-4"
           >
-            <h2 className="text-2xl font-bold">{slides[idx]?.title}</h2>
-            <p className="text-zinc-600">{slides[idx]?.text}</p>
+            <h2 className="text-2xl font-bold text-tg-text">{slides[idx]?.title}</h2>
+            <p className="text-tg-hint">{slides[idx]?.text}</p>
           </motion.div>
         </AnimatePresence>
         <div className="mt-8 flex justify-center gap-2">
@@ -47,7 +47,7 @@ export function OnboardingScreen() {
               key={i}
               type="button"
               aria-label={`slide ${i + 1}`}
-              className={`h-2 w-2 rounded-full ${i === idx ? "bg-blue-600" : "bg-zinc-300"}`}
+              className={`h-2 w-2 rounded-full ${i === idx ? "bg-tg-link" : "bg-tg-hint/35"}`}
               onClick={() => setIdx(i)}
             />
           ))}
@@ -55,20 +55,24 @@ export function OnboardingScreen() {
       </div>
       <div className="flex gap-3">
         {idx > 0 && (
-          <button type="button" className="flex-1 rounded-xl border border-zinc-300 py-3" onClick={() => setIdx((x) => x - 1)}>
+          <button type="button" className="flex-1 rounded-xl border border-tg py-3 text-tg-text" onClick={() => setIdx((x) => x - 1)}>
             Назад
           </button>
         )}
         {idx < slides.length - 1 ? (
           <button
             type="button"
-            className="flex-1 rounded-xl bg-blue-600 py-3 text-white"
+            className="flex-1 rounded-xl bg-tg-link py-3 font-medium text-[var(--tg-theme-button-text-color,#fff)]"
             onClick={() => setIdx((x) => x + 1)}
           >
             Далее
           </button>
         ) : (
-          <button type="button" className="flex-1 rounded-xl bg-blue-600 py-3 text-white" onClick={() => void finish()}>
+          <button
+            type="button"
+            className="flex-1 rounded-xl bg-tg-link py-3 font-medium text-[var(--tg-theme-button-text-color,#fff)]"
+            onClick={() => void finish()}
+          >
             Начать подготовку к ЕГЭ
           </button>
         )}
