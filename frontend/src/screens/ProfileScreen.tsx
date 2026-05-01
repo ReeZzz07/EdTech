@@ -102,6 +102,15 @@ export function ProfileScreen() {
           <button
             type="button"
             className="w-full rounded-xl border border-tg bg-tg-secondary p-4 text-left text-tg-text"
+            onClick={() => navigate("/peer-help")}
+          >
+            Peer-помощь
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            className="w-full rounded-xl border border-tg bg-tg-secondary p-4 text-left text-tg-text"
             onClick={() => navigate("/premium")}
           >
             Premium

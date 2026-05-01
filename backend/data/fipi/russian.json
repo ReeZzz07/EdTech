@@ -1,0 +1,15 @@
+{
+  "fipiSpecKey": "ege-russian-demo",
+  "topics": [
+    {
+      "id": "r1",
+      "label": "Орфография",
+      "children": [{ "id": "r1.1", "label": "Правописание корней" }, { "id": "r1.2", "label": "Н и НН" }]
+    },
+    {
+      "id": "r2",
+      "label": "Пунктуация",
+      "children": [{ "id": "r2.1", "label": "Запятая в сложном предложении" }]
+    }
+  ]
+}

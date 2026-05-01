@@ -22,6 +22,7 @@ const DiagnosisScreen = lazy(() =>
 );
 const ShopScreen = lazy(() => import("./screens/ShopScreen").then((m) => ({ default: m.ShopScreen })));
 const PremiumScreen = lazy(() => import("./screens/PremiumScreen").then((m) => ({ default: m.PremiumScreen })));
+const PeerHelpScreen = lazy(() => import("./screens/PeerHelpScreen").then((m) => ({ default: m.PeerHelpScreen })));
 
 export function App() {
   const ready = useBootstrap();
@@ -77,6 +78,7 @@ export function App() {
               <Route path="/progress" element={<ProgressScreen />} />
               <Route path="/clans" element={<ClansScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
+              <Route path="/peer-help" element={<PeerHelpScreen />} />
             </Route>
             <Route path="/camera" element={<CameraScreen />} />
             <Route path="/diagnosis/:problemId" element={<DiagnosisScreen />} />

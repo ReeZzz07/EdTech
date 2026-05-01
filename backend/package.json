@@ -11,7 +11,8 @@
     "db:seed": "prisma db seed",
     "lint": "eslint src --ext .ts",
     "test": "vitest run",
-    "format": "prettier -w \"src/**/*.ts\""
+    "format": "prettier -w \"src/**/*.ts\"",
+    "fipi:import": "tsx src/scripts/fipi-import.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma",

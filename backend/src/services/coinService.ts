@@ -49,7 +49,7 @@ export async function tryEarnForDiagnosis(userId: string, problemId: string, raw
   });
 }
 
-export async function spend(userId: string, amount: number, type: string, meta?: object) {
+export async function spend(userId: string, amount: number, type: string, meta?: object, refId?: string) {
   if (amount <= 0) throw new HttpError("amount>0", 400, "invalid_amount");
   return prisma.$transaction(async (tx) => {
     const u = await tx.user.findUnique({ where: { id: userId } });
@@ -57,8 +57,9 @@ export async function spend(userId: string, amount: number, type: string, meta?:
     if (u.coinBalance < amount) {
       throw new HttpError("Недостаточно ЕГЭCOIN", 402, "insufficient_coins");
     }
+    const rid = refId ?? `spend-${Date.now()}`;
     const t = await tx.coinTransaction.create({
-      data: { userId, amount: -amount, type, meta: meta as object | undefined, refId: `spend-${Date.now()}` },
+      data: { userId, amount: -amount, type, meta: meta as object | undefined, refId: rid },
     });
     await tx.user.update({
       where: { id: userId },

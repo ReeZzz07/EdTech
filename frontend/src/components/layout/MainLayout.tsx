@@ -15,8 +15,10 @@ export function MainLayout() {
   const showFab = loc.pathname === "/";
 
   return (
-    <div className="min-h-[100dvh] bg-tg-bg pb-24 text-tg-text">
-      <Outlet />
+    <div className="flex min-h-[100dvh] flex-col bg-tg-bg pb-24 text-tg-text">
+      <main id="main-content" className="flex-1 outline-none" tabIndex={-1}>
+        <Outlet />
+      </main>
       {showFab && (
         <button
           type="button"
@@ -30,7 +32,10 @@ export function MainLayout() {
           <Camera size={26} />
         </button>
       )}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex justify-around border-t border-tg bg-tg-secondary pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-30 flex justify-around border-t border-tg bg-tg-secondary pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
+        aria-label="Основная навигация"
+      >
         {tabs.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}

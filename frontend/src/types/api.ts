@@ -4,6 +4,9 @@ export type SubjectDto = {
   name: string;
   isEnabled: boolean;
   sortOrder: number;
+  fipiSpecKey?: string | null;
+  /** Дерево тем ФИПИ (импорт скриптом), см. docs/fipi-import.md */
+  fipiTopics?: unknown;
   skillMap?: unknown;
 };
 

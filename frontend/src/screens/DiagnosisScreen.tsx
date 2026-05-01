@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { PeerHelpPanel } from "../components/social/PeerHelpPanel";
 import { api } from "../services/api";
 import { useUserStore } from "../stores/userStore";
 import { capture } from "../services/analytics";
@@ -185,6 +186,10 @@ export function DiagnosisScreen() {
           </li>
         ))}
       </ul>
+
+      {problemId && payload.problem?.subjectId ? (
+        <PeerHelpPanel subjectId={payload.problem.subjectId} problemId={problemId} />
+      ) : null}
 
       <div className="mt-8 flex flex-wrap gap-2">
         <button type="button" className="rounded-xl border border-tg px-4 py-2 text-sm text-tg-text" onClick={() => navigate("/camera")}>

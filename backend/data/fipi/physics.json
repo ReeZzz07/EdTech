@@ -1,0 +1,15 @@
+{
+  "fipiSpecKey": "ege-physics-demo",
+  "topics": [
+    {
+      "id": "p1",
+      "label": "Механика",
+      "children": [{ "id": "p1.1", "label": "Кинематика" }, { "id": "p1.2", "label": "Динамика" }]
+    },
+    {
+      "id": "p2",
+      "label": "Молекулярная физика",
+      "children": [{ "id": "p2.1", "label": "МКТ и термодинамика" }]
+    }
+  ]
+}

@@ -23,6 +23,16 @@ const subjects = [
       { skillId: "russian.syntax", label: "Синтаксис" },
     ],
   },
+  {
+    code: "physics",
+    name: "Физика",
+    sortOrder: 3,
+    skillMap: [
+      { skillId: "physics.mechanics", label: "Механика" },
+      { skillId: "physics.molecular", label: "Молекулярная физика" },
+      { skillId: "physics.electricity", label: "Электричество и магнетизм" },
+    ],
+  },
 ] as const;
 
 async function main() {
