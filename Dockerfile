@@ -1,4 +1,4 @@
-# Production API из корня монорепо (Railway / Fly.io с контекстом `.`).
+# Production API из корня монорепо (Coolify / Railway / Fly — контекст `.`).
 # Сборка: docker build -t egepro-api .
 # Старт: Prisma migrate deploy, затем node.
 FROM node:20-alpine
