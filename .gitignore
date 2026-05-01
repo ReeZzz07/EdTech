@@ -35,3 +35,7 @@ uploads/
 # Misc
 coverage/
 .turbo/
+
+# Local SSH keys (never commit)
+/rez
+/rez.pub
