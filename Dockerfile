@@ -7,9 +7,12 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY backend ./backend
 
-RUN npm ci && npm run db:generate -w backend && npm run build -w backend
+RUN test -n "$(find backend/src/database/prisma/migrations -name migration.sql | head -n1)" \
+  || (echo "FATAL: нет SQL миграций в образе (путь backend/src/database/prisma/migrations)" && exit 1)
+
+RUN npm ci --include=dev && npm run db:generate -w backend && npm run build -w backend
 
 ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["sh", "-c", "cd backend && npx prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "cd backend && npx prisma migrate deploy --schema=src/database/schema.prisma && node dist/server.js"]

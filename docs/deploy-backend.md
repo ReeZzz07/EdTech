@@ -38,6 +38,8 @@
 - Dockerfile path: `Dockerfile`
 - Base directory: корень репозитория
 
+Не используй **`backend/Dockerfile`** для Coolify в монорепо: он рассчитан на контекст `./backend`, не тянет корневой `package-lock.json` и не соответствует npm workspaces.
+
 Текущий корневой `Dockerfile` уже собирает backend и запускает:
 
 - `npx prisma migrate deploy`
