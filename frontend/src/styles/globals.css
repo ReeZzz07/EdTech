@@ -16,4 +16,9 @@ body {
     "Segoe UI",
     Roboto,
     sans-serif;
+  background-color: var(--tg-theme-bg-color, #f4f4f5);
+  color: var(--tg-theme-text-color, #18181b);
 }
+
+/* Telegram Mini App: тема задаётся CSS-переменными, не через prefers-color-scheme;
+   компоненты Tailwind dark:* без класса .dark часто рассинхронизированы с WebApp. */

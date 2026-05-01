@@ -92,9 +92,9 @@ export function DiagnosisScreen() {
 
   if (phase === "wait" || (phase === "done" && !payload?.diagnosis)) {
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 p-6">
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-        <p className="text-center text-zinc-600">ИИ анализирует решение…</p>
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-tg-bg p-6">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-tg-link border-t-transparent" />
+        <p className="text-center text-tg-hint">ИИ анализирует решение…</p>
       </div>
     );
   }
@@ -103,7 +103,11 @@ export function DiagnosisScreen() {
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 p-6">
         <p className="text-center text-red-600">Не удалось завершить анализ</p>
-        <button type="button" className="rounded-xl bg-blue-600 px-6 py-3 text-white" onClick={() => navigate("/")}>
+        <button
+          type="button"
+          className="rounded-xl bg-tg-link px-6 py-3 text-[var(--tg-theme-button-text-color,#fff)]"
+          onClick={() => navigate("/")}
+        >
           На главную
         </button>
       </div>
@@ -117,21 +121,21 @@ export function DiagnosisScreen() {
   const errArr = Array.isArray(d.errors) ? d.errors : [];
 
   return (
-    <div className="min-h-[100dvh] bg-[var(--tg-theme-bg-color,#fff)] p-4 pb-10">
+    <div className="min-h-[100dvh] bg-tg-bg p-4 pb-10 text-tg-text">
       {img && <img src={img} alt="задача" className="mb-4 max-h-48 w-full rounded-xl object-contain" />}
-      <div className="mb-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
-        <p className="text-sm text-zinc-500">{payload.problem?.subject?.name ?? "Разбор"}</p>
-        <p className="text-sm text-zinc-500">Оценка</p>
-        <p className="text-3xl font-bold">{d.overallScore}</p>
+      <div className="mb-4 rounded-2xl border border-tg bg-tg-secondary p-4 shadow-sm">
+        <p className="text-sm text-tg-hint">{payload.problem?.subject?.name ?? "Разбор"}</p>
+        <p className="text-sm text-tg-hint">Оценка</p>
+        <p className="text-3xl font-bold text-tg-text">{d.overallScore}</p>
         <p className="text-sm text-amber-600">+{d.coinsEarned} EGC</p>
       </div>
 
       {errArr.length > 0 && (
         <>
-          <h3 className="mb-2 font-semibold">Замечания</h3>
+          <h3 className="mb-2 font-semibold text-tg-text">Замечания</h3>
           <ul className="mb-6 space-y-2">
             {errArr.map((raw, i) => (
-              <li key={i} className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/30">
+              <li key={i} className="rounded-lg border border-amber-500/35 bg-amber-500/12 p-3 text-sm text-tg-text">
                 {typeof raw === "string" ? raw : JSON.stringify(raw)}
               </li>
             ))}
@@ -139,10 +143,10 @@ export function DiagnosisScreen() {
         </>
       )}
 
-      <h3 className="mb-2 font-semibold">Шаги</h3>
+      <h3 className="mb-2 font-semibold text-tg-text">Шаги</h3>
       <ul className="space-y-2">
         {stepsArr.map((raw, i) => (
-          <li key={i} className="rounded-lg border border-zinc-200 p-3 text-sm dark:border-zinc-700">
+          <li key={i} className="rounded-lg border border-tg bg-tg-secondary p-3 text-sm">
             {isStepRecord(raw) ? (
               <>
                 <p className="font-medium">
@@ -154,8 +158,8 @@ export function DiagnosisScreen() {
                     </span>
                   ) : null}
                 </p>
-                <p className="mt-1 text-zinc-700 dark:text-zinc-200">{raw.description ?? "—"}</p>
-                {raw.feedback ? <p className="mt-1 text-xs text-zinc-500">{raw.feedback}</p> : null}
+                <p className="mt-1 text-tg-text">{raw.description ?? "—"}</p>
+                {raw.feedback ? <p className="mt-1 text-xs text-tg-hint">{raw.feedback}</p> : null}
               </>
             ) : (
               <pre className="whitespace-pre-wrap font-sans">{JSON.stringify(raw, null, 2)}</pre>
@@ -164,14 +168,14 @@ export function DiagnosisScreen() {
         ))}
       </ul>
 
-      <h3 className="mb-2 mt-6 font-semibold">Рекомендации</h3>
-      <ul className="space-y-2 text-sm text-zinc-700 dark:text-zinc-200">
+      <h3 className="mb-2 mt-6 font-semibold text-tg-text">Рекомендации</h3>
+      <ul className="space-y-2 text-sm">
         {recArr.map((raw, i) => (
-          <li key={i} className="rounded-lg border border-blue-100 bg-blue-50/60 p-3 dark:border-blue-900 dark:bg-blue-950/25">
+          <li key={i} className="rounded-lg border border-tg-link/30 bg-tg-secondary p-3 text-tg-text">
             {isRecRecord(raw) ? (
               <>
                 <p className="font-medium">{raw.title ?? "Шаг"}</p>
-                {raw.action ? <p className="mt-1 text-xs text-zinc-600">{raw.action}</p> : null}
+                {raw.action ? <p className="mt-1 text-xs text-tg-hint">{raw.action}</p> : null}
               </>
             ) : typeof raw === "string" ? (
               raw
@@ -183,10 +187,10 @@ export function DiagnosisScreen() {
       </ul>
 
       <div className="mt-8 flex flex-wrap gap-2">
-        <button type="button" className="rounded-xl border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600" onClick={() => navigate("/camera")}>
+        <button type="button" className="rounded-xl border border-tg px-4 py-2 text-sm text-tg-text" onClick={() => navigate("/camera")}>
           Похожая
         </button>
-        <button type="button" className="rounded-xl border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600" onClick={() => navigate("/")}>
+        <button type="button" className="rounded-xl border border-tg px-4 py-2 text-sm text-tg-text" onClick={() => navigate("/")}>
           Главная
         </button>
       </div>

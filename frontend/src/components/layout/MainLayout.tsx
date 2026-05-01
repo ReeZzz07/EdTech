@@ -15,12 +15,12 @@ export function MainLayout() {
   const showFab = loc.pathname === "/";
 
   return (
-    <div className="min-h-[100dvh] bg-[var(--tg-theme-bg-color,#f4f4f5)] pb-24 text-[var(--tg-theme-text-color,#18181b)]">
+    <div className="min-h-[100dvh] bg-tg-bg pb-24 text-tg-text">
       <Outlet />
       {showFab && (
         <button
           type="button"
-          className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg active:scale-95"
+          className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-tg-link text-[var(--tg-theme-button-text-color,#fff)] shadow-lg active:scale-95"
           onClick={() => {
             haptic("medium");
             navigate("/camera");
@@ -30,14 +30,14 @@ export function MainLayout() {
           <Camera size={26} />
         </button>
       )}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex justify-around border-t border-black/10 bg-[var(--tg-theme-secondary-bg-color,#fff)] pb-[env(safe-area-inset-bottom)] pt-2 opacity-95 backdrop-blur">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 flex justify-around border-t border-tg bg-tg-secondary pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
         {tabs.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-3 py-1 text-xs ${isActive ? "font-semibold text-blue-600" : "text-zinc-500"}`
+              `flex flex-col items-center gap-0.5 px-3 py-1 text-xs ${isActive ? "font-semibold text-tg-link" : "text-tg-hint"}`
             }
             onClick={() => haptic("light")}
           >

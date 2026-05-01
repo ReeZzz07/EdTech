@@ -56,58 +56,60 @@ export function PremiumScreen() {
   }
 
   return (
-    <div className="p-4 pb-24">
-      <button type="button" className="mb-4 text-sm text-blue-600" onClick={() => navigate(-1)}>
+    <div className="p-4 pb-24 text-tg-text">
+      <button type="button" className="mb-4 text-sm text-tg-link" onClick={() => navigate(-1)}>
         ← Назад
       </button>
       <h1 className="mb-2 text-xl font-bold">Premium</h1>
       {!offer ? (
-        <p className="mb-2 text-xs text-zinc-500">Загрузка тарифа…</p>
+        <p className="mb-2 text-xs text-tg-hint">Загрузка тарифа…</p>
       ) : (
-        <p className="mb-2 text-sm text-zinc-600">
-          Тариф: <strong>{offer.priceRub} ₽</strong> за <strong>{offer.days}</strong> дн.
+        <p className="mb-2 text-sm text-tg-hint">
+          Тариф: <strong className="text-tg-text">{offer.priceRub} ₽</strong> за <strong className="text-tg-text">{offer.days}</strong> дн.
           {!offer.invoiceAvailable ? (
-            <span className="block pt-1 text-amber-700 dark:text-amber-400">
+            <span className="mt-1 block text-amber-600">
               На сервере не настроен платёжный провайдер — см. TELEGRAM_PAYMENT_PROVIDER_TOKEN.
             </span>
           ) : null}
         </p>
       )}
       {active ? (
-        <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100">
+        <p className="mb-4 rounded-xl border border-emerald-500/35 bg-emerald-500/12 p-3 text-sm text-tg-text">
           У тебя активен Premium
           {user?.premiumUntil ? ` до ${new Date(user.premiumUntil).toLocaleString("ru-RU")}` : ""}.
         </p>
       ) : (
-        <p className="mb-4 text-sm text-zinc-600">
+        <p className="mb-4 text-sm text-tg-hint">
           Оплата через официальные Telegram Payments (провайдер из BotFather). После оплаты подписка продлевается автоматически.
         </p>
       )}
 
-      {err ? <p className="mb-3 rounded-lg bg-red-50 p-2 text-sm text-red-700">{err}</p> : null}
+      {err ? (
+        <p className="mb-3 rounded-lg border border-red-500/35 bg-red-500/12 p-2 text-sm text-red-800">{err}</p>
+      ) : null}
 
-      <div className="overflow-hidden rounded-2xl border border-black/10">
+      <div className="overflow-hidden rounded-2xl border border-tg bg-tg-secondary">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-100 dark:bg-zinc-800">
+          <thead className="bg-tg-hint/15">
             <tr>
-              <th className="px-3 py-2">Функция</th>
-              <th className="px-3 py-2">Free</th>
-              <th className="px-3 py-2">Premium</th>
+              <th className="px-3 py-2 text-tg-text">Функция</th>
+              <th className="px-3 py-2 text-tg-text">Free</th>
+              <th className="px-3 py-2 text-tg-text">Premium</th>
             </tr>
           </thead>
           <tbody>
             {ROWS.map((row) => (
-              <tr key={row.feature} className="border-t border-black/10">
-                <td className="px-3 py-2">{row.feature}</td>
-                <td className="px-3 py-2 text-zinc-600">{row.free}</td>
-                <td className="px-3 py-2 font-medium text-blue-700 dark:text-blue-300">{row.prem}</td>
+              <tr key={row.feature} className="border-t border-tg">
+                <td className="px-3 py-2 text-tg-text">{row.feature}</td>
+                <td className="px-3 py-2 text-tg-hint">{row.free}</td>
+                <td className="px-3 py-2 font-medium text-tg-link">{row.prem}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <ul className="mt-6 space-y-2 text-sm text-zinc-700">
+      <ul className="mt-6 space-y-2 text-sm text-tg-text">
         <li className="flex gap-2">
           <Check className="mt-0.5 shrink-0 text-emerald-600" size={18} /> Больше практики без остановок на лимите
         </li>
@@ -126,7 +128,7 @@ export function PremiumScreen() {
             !canPayInTelegram ||
             Boolean(import.meta.env.VITE_DEV_JWT?.trim())
           }
-          className="mt-8 w-full rounded-xl bg-blue-600 py-4 text-center text-sm font-semibold text-white disabled:bg-zinc-300 disabled:text-zinc-600 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-400"
+          className="mt-8 w-full rounded-xl bg-tg-link py-4 text-center text-sm font-semibold text-[var(--tg-theme-button-text-color,#fff)] disabled:cursor-not-allowed disabled:opacity-45"
           onClick={() => void payPremium()}
         >
           {busy ? "Открываем оплату…" : `Оплатить в Telegram${offer ? ` · ${offer.priceRub} ₽` : ""}`}
@@ -138,11 +140,11 @@ export function PremiumScreen() {
       ) : null}
 
       {!active && offer?.invoiceAvailable && !canPayInTelegram ? (
-        <p className="mt-2 text-center text-xs text-zinc-500">Кнопка активна только внутри Telegram Mini App.</p>
+        <p className="mt-2 text-center text-xs text-tg-hint">Кнопка активна только внутри Telegram Mini App.</p>
       ) : null}
 
       {!active ? (
-        <button type="button" className="mt-6 w-full text-sm text-blue-600" onClick={() => navigate("/shop")}>
+        <button type="button" className="mt-6 w-full text-sm text-tg-link" onClick={() => navigate("/shop")}>
           Альтернатива: Premium за ЕГЭCOIN в магазине
         </button>
       ) : null}

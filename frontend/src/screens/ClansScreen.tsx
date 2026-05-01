@@ -99,19 +99,21 @@ export function ClansScreen() {
 
   return (
     <div className="p-4 pb-28">
-      <h1 className="mb-4 text-xl font-bold">Кланы</h1>
-      {err && <p className="mb-3 rounded-lg bg-red-50 p-2 text-sm text-red-700">{err}</p>}
+      <h1 className="mb-4 text-xl font-bold text-tg-text">Кланы</h1>
+      {err && (
+        <p className="mb-3 rounded-lg border border-red-500/35 bg-red-500/12 p-2 text-sm text-red-800">{err}</p>
+      )}
 
-      <section className="mb-6 rounded-2xl border border-black/10 bg-white/90 p-4 dark:bg-zinc-800/80">
-        <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">Топ кланов</p>
-        <p className="mb-3 text-xs text-zinc-500">По сумме решённых задач участников</p>
+      <section className="mb-6 rounded-2xl border border-tg bg-tg-secondary p-4">
+        <p className="text-sm font-semibold text-tg-text">Топ кланов</p>
+        <p className="mb-3 text-xs text-tg-hint">По сумме решённых задач участников</p>
         <ol className="space-y-2">
           {globalLb.slice(0, 10).map((c, i) => (
             <li key={c.id} className="flex items-center justify-between text-sm">
-              <span className="font-medium text-zinc-700 dark:text-zinc-200">
+              <span className="font-medium text-tg-text">
                 {i + 1}. {c.name}
               </span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-tg-hint">
                 {c.score} оч. · {c.memberCount} чел.
               </span>
             </li>
@@ -120,18 +122,18 @@ export function ClansScreen() {
       </section>
 
       <input
-        className="mb-4 w-full rounded-xl border border-zinc-300 p-3 dark:border-zinc-600 dark:bg-zinc-900"
+        className="mb-4 w-full rounded-xl border border-tg bg-tg-bg p-3 text-tg-text placeholder:text-tg-hint"
         placeholder="Поиск клана…"
         value={q}
         onChange={(e) => setQ(e.target.value)}
       />
 
       {mine && (
-        <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/40">
-          <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Твой клан</p>
-          <p className="text-lg font-semibold">{mine.name}</p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">{mine.description}</p>
-          <p className="mt-1 text-xs text-zinc-500">
+        <div className="mb-4 rounded-xl border border-tg-link/35 bg-tg-secondary p-4">
+          <p className="text-sm font-medium text-tg-link">Твой клан</p>
+          <p className="text-lg font-semibold text-tg-text">{mine.name}</p>
+          <p className="text-sm text-tg-hint">{mine.description}</p>
+          <p className="mt-1 text-xs text-tg-hint">
             Роль: {mine.role} · до {mine.maxMembers} участников
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -139,7 +141,7 @@ export function ClansScreen() {
               <button
                 key={t}
                 type="button"
-                className={`rounded-full px-3 py-1 text-xs ${tab === t ? "bg-blue-600 text-white" : "bg-white text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"}`}
+                className={`rounded-full px-3 py-1 text-xs ${tab === t ? "bg-tg-link text-[var(--tg-theme-button-text-color,#fff)]" : "bg-tg-hint/15 text-tg-text"}`}
                 onClick={() => setTab(t)}
               >
                 {t === "browse" ? "Каталог" : t === "members" ? "Участники" : "Чат"}
@@ -147,7 +149,7 @@ export function ClansScreen() {
             ))}
             <button
               type="button"
-              className="rounded-full bg-red-100 px-3 py-1 text-xs text-red-800 dark:bg-red-950/60 dark:text-red-200"
+              className="rounded-full border border-red-500/35 bg-red-500/12 px-3 py-1 text-xs text-red-800"
               onClick={() => {
                 if (!mine?.id) return;
                 if (!confirm("Выйти из клана?")) return;
@@ -169,40 +171,44 @@ export function ClansScreen() {
           </div>
 
           {tab === "members" && (
-            <ul className="mt-4 space-y-2 border-t border-blue-200 pt-3 dark:border-blue-900">
+            <ul className="mt-4 space-y-2 border-t border-tg pt-3">
               {membersLb.map((row, idx) => (
                 <li key={row.user.id} className="flex justify-between text-sm">
-                  <span>
+                  <span className="text-tg-text">
                     {idx + 1}. {row.user.firstName}{" "}
-                    <span className="text-xs text-zinc-500">{row.role}</span>
+                    <span className="text-xs text-tg-hint">{row.role}</span>
                   </span>
-                  <span className="text-zinc-600">{row.user.totalProblemsSolved} задач</span>
+                  <span className="text-tg-hint">{row.user.totalProblemsSolved} задач</span>
                 </li>
               ))}
             </ul>
           )}
 
           {tab === "chat" && (
-            <div className="mt-4 flex max-h-72 flex-col border-t border-blue-200 pt-3 dark:border-blue-900">
+            <div className="mt-4 flex max-h-72 flex-col border-t border-tg pt-3">
               <div className="mb-2 flex-1 space-y-2 overflow-y-auto">
                 {messages.map((m) => (
-                  <div key={m.id} className="rounded-lg bg-white/90 p-2 text-sm dark:bg-zinc-900/90">
-                    <p className="text-xs font-medium text-blue-700 dark:text-blue-300">{m.user.firstName}</p>
-                    <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{m.body}</p>
-                    <p className="text-[10px] text-zinc-400">{new Date(m.createdAt).toLocaleString("ru-RU")}</p>
+                  <div key={m.id} className="rounded-lg border border-tg bg-tg-bg p-2 text-sm">
+                    <p className="text-xs font-medium text-tg-link">{m.user.firstName}</p>
+                    <p className="whitespace-pre-wrap text-tg-text">{m.body}</p>
+                    <p className="text-[10px] text-tg-hint">{new Date(m.createdAt).toLocaleString("ru-RU")}</p>
                   </div>
                 ))}
-                {!messages.length ? <p className="text-sm text-zinc-500">Пока нет сообщений — напиши первым.</p> : null}
+                {!messages.length ? <p className="text-sm text-tg-hint">Пока нет сообщений — напиши первым.</p> : null}
               </div>
               <div className="mt-2 flex gap-2">
                 <input
-                  className="flex-1 rounded-lg border border-zinc-300 p-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                  className="flex-1 rounded-lg border border-tg bg-tg-bg p-2 text-sm text-tg-text placeholder:text-tg-hint"
                   placeholder="Сообщение…"
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   maxLength={2000}
                 />
-                <button type="button" className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white" onClick={() => void sendMessage()}>
+                <button
+                  type="button"
+                  className="rounded-lg bg-tg-link px-4 py-2 text-sm text-[var(--tg-theme-button-text-color,#fff)]"
+                  onClick={() => void sendMessage()}
+                >
                   Отпр.
                 </button>
               </div>
@@ -215,16 +221,16 @@ export function ClansScreen() {
         <>
           <ul className="space-y-3">
             {items.map((c) => (
-              <li key={c.id} className="rounded-xl border border-black/10 p-4 dark:border-zinc-700">
-                <p className="font-semibold">{c.name}</p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">{c.description}</p>
-                <p className="mt-2 text-xs text-zinc-400">
+              <li key={c.id} className="rounded-xl border border-tg bg-tg-secondary p-4">
+                <p className="font-semibold text-tg-text">{c.name}</p>
+                <p className="text-sm text-tg-hint">{c.description}</p>
+                <p className="mt-2 text-xs text-tg-hint">
                   {c.members}/{c.maxMembers}
                 </p>
                 {!mine && (
                   <button
                     type="button"
-                    className="mt-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white"
+                    className="mt-2 rounded-lg bg-tg-link px-4 py-2 text-sm text-[var(--tg-theme-button-text-color,#fff)]"
                     onClick={async () => {
                       setErr(null);
                       try {
@@ -245,13 +251,23 @@ export function ClansScreen() {
           </ul>
 
           {!mine && (
-            <section className="mt-8 rounded-xl border border-dashed border-zinc-300 p-4 dark:border-zinc-600">
-              <p className="mb-2 font-medium">Создать клан</p>
-              <input className="mb-2 w-full rounded-lg border p-2 dark:border-zinc-600 dark:bg-zinc-900" placeholder="Название" value={name} onChange={(e) => setName(e.target.value)} />
-              <textarea className="mb-2 w-full rounded-lg border p-2 dark:border-zinc-600 dark:bg-zinc-900" placeholder="Описание" value={desc} onChange={(e) => setDesc(e.target.value)} />
+            <section className="mt-8 rounded-xl border border-dashed border-tg bg-tg-secondary/50 p-4">
+              <p className="mb-2 font-medium text-tg-text">Создать клан</p>
+              <input
+                className="mb-2 w-full rounded-lg border border-tg bg-tg-bg p-2 text-tg-text placeholder:text-tg-hint"
+                placeholder="Название"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <textarea
+                className="mb-2 w-full rounded-lg border border-tg bg-tg-bg p-2 text-tg-text placeholder:text-tg-hint"
+                placeholder="Описание"
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+              />
               <button
                 type="button"
-                className="rounded-lg bg-zinc-800 px-4 py-2 text-sm text-white dark:bg-zinc-200 dark:text-zinc-900"
+                className="rounded-lg bg-tg-link px-4 py-2 text-sm text-[var(--tg-theme-button-text-color,#fff)]"
                 onClick={async () => {
                   setErr(null);
                   try {

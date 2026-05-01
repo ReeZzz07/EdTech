@@ -53,10 +53,10 @@ export function ShopScreen() {
 
   return (
     <div className="p-4 pb-24">
-      <button type="button" className="mb-4 text-sm text-blue-600" onClick={() => navigate(-1)}>
+      <button type="button" className="mb-4 text-sm text-tg-link" onClick={() => navigate(-1)}>
         ← Назад
       </button>
-      <h1 className="mb-2 text-xl font-bold">Магазин</h1>
+      <h1 className="mb-2 text-xl font-bold text-tg-text">Магазин</h1>
       <p className="mb-4 text-amber-600">Баланс: {balance ?? 0} EGC</p>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -64,7 +64,7 @@ export function ShopScreen() {
           <button
             key={t}
             type="button"
-            className={`rounded-full px-3 py-1 text-xs ${tab === t ? "bg-blue-600 text-white" : "bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100"}`}
+            className={`rounded-full px-3 py-1 text-xs ${tab === t ? "bg-tg-link text-[var(--tg-theme-button-text-color,#fff)]" : "bg-tg-hint/20 text-tg-text"}`}
             onClick={() => {
               setErr(null);
               setTab(t);
@@ -75,37 +75,39 @@ export function ShopScreen() {
         ))}
       </div>
 
-      {err && <p className="mb-3 rounded-lg bg-red-50 p-2 text-sm text-red-700">{err}</p>}
+      {err && (
+        <p className="mb-3 rounded-lg border border-red-500/35 bg-red-500/12 p-2 text-sm text-red-800">{err}</p>
+      )}
 
       {tab === "history" ? (
         <ul className="space-y-2">
           {tx.map((row) => (
-            <li key={row.id} className="rounded-xl border border-black/10 p-3 text-sm">
+            <li key={row.id} className="rounded-xl border border-tg bg-tg-secondary p-3 text-sm">
               <div className="flex justify-between gap-2">
-                <span className="text-zinc-600">{row.type}</span>
+                <span className="text-tg-hint">{row.type}</span>
                 <span className={row.amount >= 0 ? "font-semibold text-emerald-600" : "font-semibold text-red-600"}>
                   {row.amount >= 0 ? "+" : ""}
                   {row.amount}
                 </span>
               </div>
-              <p className="text-xs text-zinc-400">{new Date(row.createdAt).toLocaleString("ru-RU")}</p>
+              <p className="text-xs text-tg-hint">{new Date(row.createdAt).toLocaleString("ru-RU")}</p>
             </li>
           ))}
-          {!tx.length ? <p className="text-sm text-zinc-500">Пока нет операций.</p> : null}
+          {!tx.length ? <p className="text-sm text-tg-hint">Пока нет операций.</p> : null}
         </ul>
       ) : (
         <ul className="space-y-3">
           {filtered.map((it) => (
-            <li key={it.id} className="flex items-center justify-between gap-3 rounded-xl border border-black/10 p-4">
+            <li key={it.id} className="flex items-center justify-between gap-3 rounded-xl border border-tg bg-tg-secondary p-4">
               <div className="min-w-0">
-                <p className="font-medium">{it.label}</p>
-                <p className="text-sm text-zinc-500">
+                <p className="font-medium text-tg-text">{it.label}</p>
+                <p className="text-sm text-tg-hint">
                   {it.price} EGC · {TAB_LABELS[it.category]}
                 </p>
               </div>
               <button
                 type="button"
-                className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white"
+                className="shrink-0 rounded-lg bg-tg-link px-4 py-2 text-sm text-[var(--tg-theme-button-text-color,#fff)]"
                 onClick={async () => {
                   setErr(null);
                   try {
