@@ -19,10 +19,11 @@ RUN printf '%s\n' \
   '  gzip_min_length 256;' \
   '  gzip_types text/plain text/css application/javascript application/json application/xml image/svg+xml;' \
   '  location / {' \
-  '    try_files \$uri \$uri/ /index.html;' \
+  "    try_files \$uri \$uri/ /index.html;" \
   '  }' \
   '}' \
-  > /etc/nginx/conf.d/default.conf
+  > /etc/nginx/conf.d/default.conf \
+  && nginx -t
 
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 
