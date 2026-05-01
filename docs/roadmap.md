@@ -118,11 +118,21 @@ _API кланов на бэке — 2026-04-27; на клиенте — базо
 
 _Цель: оплата через Telegram, напоминания, наблюдаемость, деплой._
 
+_Срез прод-инфры (Coolify VPS): закрыто **2026-05-01** — см. ниже `[x]` по деплою и операционке._
+
 - [ ] **Telegram Payments** — `openInvoice`, подписка/продление, `isPremium` / `premiumUntil` на User, webhooks/проверка статуса.
 - [ ] **Уведомления** — `notificationService` + `notificationJob`, Bot API: напоминания, достижения, клан, окончание Premium.
-- [ ] **Sentry, деплой** — фронт Vercel, бэк Railway, секреты, Cloudflare при необходимости.
+- [x] **Деплой прод** — Coolify на VPS: backend (корневой `Dockerfile`), frontend (`frontend/Dockerfile`), PostgreSQL и Redis как ресурсы; HTTPS (`api.*` / `app.*`); гайд [`docs/deploy-backend.md`](./deploy-backend.md); Prisma — стандартная раскладка `backend/prisma/`.
+- [ ] **Sentry / расширенная наблюдаемость** — ошибки и метрики в проде (после базового health и логов Coolify).
+- [ ] **Альтернативные хостинги (опционально)** — Vercel для фронта, Railway/Fly для API — если понадобится вынести часть сервисов.
 - [ ] **NFR из ТЗ** — lazy loading тяжёлых экранов, WebP, retry сети, понятные ошибки; минимальный Service Worker / offline-стратегия по силам.
 - [ ] **Тестирование** — unit критичных utils/services, integration ключевых API, 1–2 E2E сценария (auth + upload + diagnosis).
+
+**Операционка прод (разово закрыто 2026-05-01):**
+
+- [x] **Хост и Redis** — `vm.overcommit_memory=1` на VPS (рекомендация Redis при fork/BGSAVE); стабильная связка приложение ↔ Redis (`REDIS_URL`).
+- [x] **Бэкапы PostgreSQL** — настроены и проверены (восстановление или тестовый прогон по вашей процедуре).
+- [x] **Смоук-тесты прод** — авторизация из Telegram и ключевые пользовательские сценарии MVP пройдены на боевых URL.
 
 ---
 
@@ -149,7 +159,7 @@ _По мере приоритета; не блокирует закрытие MV
 | 6   | Геймификация, лимиты, achievements, coins API    |
 | 7   | Progress, Shop, Premium UI                       |
 | 8   | Кланы, лидерборды, (чат)                         |
-| 9   | Платежи, уведомления, Sentry, деплой, тесты, NFR |
+| 9   | Платежи, уведомления, Sentry, **деплой (Coolify ✓)**, тесты, NFR |
 | 10  | ФИПИ, новые предметы, peer help, a11y            |
 
 ---
