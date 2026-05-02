@@ -53,7 +53,7 @@ export function App() {
     );
   }
 
-  if (!user.onboardingComplete) {
+  if (user.onboardingComplete !== true) {
     return (
       <AppRoot appearance={scheme}>
         <BrowserRouter>

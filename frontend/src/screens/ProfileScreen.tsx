@@ -9,7 +9,7 @@ import { api } from "../services/api";
 type AchievementRow = { code: string; unlockedAt: string };
 
 export function ProfileScreen() {
-  const { user, logout } = useUserStore();
+  const { user, logout, refreshMe } = useUserStore();
   const navigate = useNavigate();
   const [achievements, setAchievements] = useState<AchievementRow[]>([]);
 
@@ -89,6 +89,19 @@ export function ProfileScreen() {
       </ul>
 
       <ul className="space-y-2">
+        <li>
+          <button
+            type="button"
+            className="w-full rounded-xl border border-tg bg-tg-secondary p-4 text-left text-tg-text"
+            onClick={async () => {
+              await api.put("/api/user/settings", { onboardingComplete: false });
+              await refreshMe();
+              navigate("/onboarding", { replace: true });
+            }}
+          >
+            Показать приветствие снова
+          </button>
+        </li>
         <li>
           <button
             type="button"

@@ -1,42 +1,10 @@
 import "dotenv/config";
+import { DEFAULT_SUBJECTS } from "../data/defaultSubjects";
 import { logger } from "../utils/logger";
 import { prisma } from "./client";
 
-const subjects = [
-  {
-    code: "math",
-    name: "Математика",
-    sortOrder: 1,
-    skillMap: [
-      { skillId: "math.algebra", label: "Алгебра" },
-      { skillId: "math.geometry", label: "Геометрия" },
-      { skillId: "math.analysis", label: "Матанализ" },
-    ],
-  },
-  {
-    code: "russian",
-    name: "Русский язык",
-    sortOrder: 2,
-    skillMap: [
-      { skillId: "russian.ortho", label: "Орфография" },
-      { skillId: "russian.punctuation", label: "Пунктуация" },
-      { skillId: "russian.syntax", label: "Синтаксис" },
-    ],
-  },
-  {
-    code: "physics",
-    name: "Физика",
-    sortOrder: 3,
-    skillMap: [
-      { skillId: "physics.mechanics", label: "Механика" },
-      { skillId: "physics.molecular", label: "Молекулярная физика" },
-      { skillId: "physics.electricity", label: "Электричество и магнетизм" },
-    ],
-  },
-] as const;
-
 async function main() {
-  for (const s of subjects) {
+  for (const s of DEFAULT_SUBJECTS) {
     await prisma.subject.upsert({
       where: { code: s.code },
       update: { name: s.name, isEnabled: true, sortOrder: s.sortOrder, skillMap: s.skillMap },

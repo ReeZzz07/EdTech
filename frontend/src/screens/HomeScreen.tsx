@@ -100,18 +100,35 @@ export function HomeScreen() {
 
       <section className="mb-4 rounded-2xl border border-tg bg-tg-secondary p-4 shadow-sm">
         <p className="text-sm font-medium text-tg-hint">Текущий предмет</p>
-        <select
-          className="mt-2 w-full rounded-lg border border-tg bg-tg-bg p-2 text-base text-tg-text"
-          value={selectedId ?? ""}
-          onChange={(e) => select(e.target.value || null)}
-        >
-          {items.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-        <p className="mt-2 text-xs text-tg-hint">{subj?.code}</p>
+        {items.length === 0 ? (
+          <div className="mt-2 space-y-2">
+            <p className="text-sm text-tg-hint">
+              Предметы подгружаются с сервера. Если список пуст — подождите секунду или обновите страницу; каталог
+              создаётся при старте API.
+            </p>
+            <button type="button" className="text-sm text-tg-link" onClick={() => void load()}>
+              Обновить список
+            </button>
+          </div>
+        ) : (
+          <>
+            <select
+              className="mt-2 w-full rounded-lg border border-tg bg-tg-bg p-2 text-base text-tg-text"
+              value={selectedId ?? ""}
+              onChange={(e) => select(e.target.value || null)}
+            >
+              {items.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-2 text-xs text-tg-hint">{subj?.code}</p>
+            <p className="mt-2 text-xs text-tg-hint">
+              Задачи не из «банка»: сфотографируй своё задание — ИИ даст разбор по выбранному предмету.
+            </p>
+          </>
+        )}
       </section>
 
       <section className="mb-4 rounded-2xl border border-tg bg-tg-secondary p-4 shadow-sm">
