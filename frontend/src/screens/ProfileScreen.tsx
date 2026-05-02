@@ -71,6 +71,22 @@ export function ProfileScreen() {
         </div>
       </section>
 
+      <section className="mb-6">
+        <h2 className="mb-2 text-sm font-semibold text-tg-hint">Приветствие</h2>
+        <button
+          type="button"
+          className="w-full rounded-xl border border-tg bg-tg-secondary p-4 text-left text-tg-text"
+          onClick={async () => {
+            await api.put("/api/user/settings", { onboardingComplete: false });
+            await refreshMe();
+            navigate("/onboarding", { replace: true });
+          }}
+        >
+          Показать приветствие снова
+        </button>
+        <p className="mt-1 text-xs text-tg-hint">Карусель из трёх экранов при первом запуске.</p>
+      </section>
+
       <h2 className="mb-2 text-sm font-semibold text-tg-hint">Достижения</h2>
       <ul className="mb-6 space-y-2">
         {ACHIEVEMENT_DEFS.map((def) => {
@@ -89,19 +105,6 @@ export function ProfileScreen() {
       </ul>
 
       <ul className="space-y-2">
-        <li>
-          <button
-            type="button"
-            className="w-full rounded-xl border border-tg bg-tg-secondary p-4 text-left text-tg-text"
-            onClick={async () => {
-              await api.put("/api/user/settings", { onboardingComplete: false });
-              await refreshMe();
-              navigate("/onboarding", { replace: true });
-            }}
-          >
-            Показать приветствие снова
-          </button>
-        </li>
         <li>
           <button
             type="button"
