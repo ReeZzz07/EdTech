@@ -23,6 +23,8 @@ const DiagnosisScreen = lazy(() =>
 const ShopScreen = lazy(() => import("./screens/ShopScreen").then((m) => ({ default: m.ShopScreen })));
 const PremiumScreen = lazy(() => import("./screens/PremiumScreen").then((m) => ({ default: m.PremiumScreen })));
 const PeerHelpScreen = lazy(() => import("./screens/PeerHelpScreen").then((m) => ({ default: m.PeerHelpScreen })));
+const TaskBankScreen = lazy(() => import("./screens/TaskBankScreen").then((m) => ({ default: m.TaskBankScreen })));
+const TaskSolveScreen = lazy(() => import("./screens/TaskSolveScreen").then((m) => ({ default: m.TaskSolveScreen })));
 
 export function App() {
   const ready = useBootstrap();
@@ -79,6 +81,8 @@ export function App() {
               <Route path="/clans" element={<ClansScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
               <Route path="/peer-help" element={<PeerHelpScreen />} />
+              <Route path="/tasks" element={<TaskBankScreen />} />
+              <Route path="/tasks/:taskId" element={<TaskSolveScreen />} />
             </Route>
             <Route path="/camera" element={<CameraScreen />} />
             <Route path="/diagnosis/:problemId" element={<DiagnosisScreen />} />

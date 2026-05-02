@@ -125,7 +125,7 @@ export function HomeScreen() {
             </select>
             <p className="mt-2 text-xs text-tg-hint">{subj?.code}</p>
             <p className="mt-2 text-xs text-tg-hint">
-              Задачи не из «банка»: сфотографируй своё задание — ИИ даст разбор по выбранному предмету.
+              С банка — готовые тексты; с камеры — своя фотография. Оба варианта — разбор ИИ по выбранному предмету.
             </p>
           </>
         )}
@@ -158,11 +158,24 @@ export function HomeScreen() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-dashed border-tg-link/35 bg-tg-secondary p-4">
-        <p className="text-sm font-medium text-tg-link">Рекомендации ИИ</p>
+      <section className="mb-4 rounded-2xl border border-tg bg-tg-secondary p-4 shadow-sm">
+        <p className="text-sm font-semibold text-tg-text">Банк заданий</p>
         <p className="mt-1 text-sm text-tg-hint">
-          После разборов здесь можно смотреть прогресс по темам на вкладке «Прогресс». Решено задач всего:{" "}
-          <strong>{user?.totalProblemsSolved ?? 0}</strong>.
+          Решай каталожные задачи без загрузки фото — сразу ввод ответа и разбор.
+        </p>
+        <button
+          type="button"
+          className="mt-3 w-full rounded-xl border border-tg-link/40 bg-tg-bg py-3 text-sm font-medium text-tg-link"
+          onClick={() => navigate("/tasks")}
+        >
+          Открыть банк
+        </button>
+      </section>
+
+      <section className="rounded-2xl border border-dashed border-tg-link/35 bg-tg-secondary p-4">
+        <p className="text-sm font-medium text-tg-link">Своя задача</p>
+        <p className="mt-1 text-sm text-tg-hint">
+          После разборов смотри прогресс на «Прогресс». Всего решено: <strong>{user?.totalProblemsSolved ?? 0}</strong>.
         </p>
         <button
           type="button"

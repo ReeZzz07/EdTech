@@ -82,6 +82,28 @@ model Subject {
 
   problems         Problem[]
   peerHelpRequests PeerHelpRequest[]
+  bankTasks        BankTask[]
+}
+
+/// Каталожное задание из банка (без фото; пользователь вводит ответ текстом)
+model BankTask {
+  id          String  @id @default(cuid())
+  subjectId   String
+  subject     Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title       String
+  /// Условие задачи (текст)
+  body        String  @db.Text
+  difficulty  Int     @default(3)
+  /// Короткий тег темы для фильтра/ИИ
+  topicTag    String  @default("")
+  sortOrder   Int     @default(0)
+  isPublished Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  problems Problem[]
+
+  @@index([subjectId, isPublished, sortOrder])
 }
 
 /// Запрос peer-помощи: объяснение за ЕГЭCOIN (этап 10)
@@ -137,8 +159,12 @@ model Problem {
 
   peerHelpRequests PeerHelpRequest[]
 
+  bankTaskId String?
+  bankTask   BankTask? @relation(fields: [bankTaskId], references: [id], onDelete: SetNull)
+
   @@index([userId, createdAt])
   @@index([subjectId])
+  @@index([bankTaskId])
 }
 
 model Diagnosis {

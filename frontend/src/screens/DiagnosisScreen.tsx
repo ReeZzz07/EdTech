@@ -19,6 +19,9 @@ type DiagnosisRes = {
     id?: string;
     subjectId?: string;
     imageUrl: string;
+    originalText?: string | null;
+    studentSolution?: string | null;
+    bankTaskId?: string | null;
     subject?: { name: string; code: string };
   };
 };
@@ -117,13 +120,31 @@ export function DiagnosisScreen() {
 
   const d = payload.diagnosis;
   const img = payload.problem?.imageUrl;
+  const isBank = Boolean(img?.startsWith("bank:") || payload.problem?.bankTaskId);
   const stepsArr = Array.isArray(d.steps) ? d.steps : [];
   const recArr = Array.isArray(d.recommendations) ? d.recommendations : [];
   const errArr = Array.isArray(d.errors) ? d.errors : [];
 
   return (
     <div className="min-h-[100dvh] bg-tg-bg p-4 pb-10 text-tg-text">
-      {img && <img src={img} alt="задача" className="mb-4 max-h-48 w-full rounded-xl object-contain" />}
+      {isBank ? (
+        <div className="mb-4 space-y-3">
+          {payload.problem?.originalText ? (
+            <div className="rounded-2xl border border-tg bg-tg-secondary p-4">
+              <p className="text-xs font-medium text-tg-hint">Условие (банк)</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{payload.problem.originalText}</p>
+            </div>
+          ) : null}
+          {payload.problem?.studentSolution ? (
+            <div className="rounded-2xl border border-tg bg-tg-secondary p-4">
+              <p className="text-xs font-medium text-tg-hint">Твой ответ</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{payload.problem.studentSolution}</p>
+            </div>
+          ) : null}
+        </div>
+      ) : img ? (
+        <img src={img} alt="задача" className="mb-4 max-h-48 w-full rounded-xl object-contain" />
+      ) : null}
       <div className="mb-4 rounded-2xl border border-tg bg-tg-secondary p-4 shadow-sm">
         <p className="text-sm text-tg-hint">{payload.problem?.subject?.name ?? "Разбор"}</p>
         <p className="text-sm text-tg-hint">Оценка</p>
@@ -192,8 +213,8 @@ export function DiagnosisScreen() {
       ) : null}
 
       <div className="mt-8 flex flex-wrap gap-2">
-        <button type="button" className="rounded-xl border border-tg px-4 py-2 text-sm text-tg-text" onClick={() => navigate("/camera")}>
-          Похожая
+        <button type="button" className="rounded-xl border border-tg px-4 py-2 text-sm text-tg-text" onClick={() => navigate(isBank ? "/tasks" : "/camera")}>
+          {isBank ? "Ещё из банка" : "Похожая"}
         </button>
         <button type="button" className="rounded-xl border border-tg px-4 py-2 text-sm text-tg-text" onClick={() => navigate("/")}>
           Главная

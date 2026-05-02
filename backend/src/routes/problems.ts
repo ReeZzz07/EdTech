@@ -101,6 +101,9 @@ problemsRouter.get(
         topic: p.topic,
         difficulty: p.difficulty,
         subject: p.subject,
+        originalText: p.originalText,
+        studentSolution: p.studentSolution,
+        bankTaskId: p.bankTaskId,
       },
       diagnosis: p.diagnosis,
     });

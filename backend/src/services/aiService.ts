@@ -19,6 +19,31 @@ export async function runDiagnosisForImage(input: {
   return mockResult(input.subjectName, input.imageBuffer.length);
 }
 
+/** Задание из банка: условие и ответ ученика текстом (без изображения). */
+export async function runDiagnosisForText(input: {
+  subjectName: string;
+  taskText: string;
+  studentText: string;
+}): Promise<DiagnosisResultAI> {
+  if (yandexGptConfig.apiKey && yandexGptConfig.folderId) {
+    try {
+      return await callYandexGptTextV1(input);
+    } catch (e) {
+      logger.error({ e }, "YandexGpt text failed, fallback to mock");
+    }
+  }
+  return mockTextResult(input);
+}
+
+async function callYandexGptTextV1(_input: {
+  subjectName: string;
+  taskText: string;
+  studentText: string;
+}): Promise<DiagnosisResultAI> {
+  void _input;
+  throw new Error("YandexGpt text: configure model URI in адаптере (этап интеграции)");
+}
+
 async function callYandexGptV1(input: {
   subjectName: string;
   imageBuffer: Buffer;
@@ -76,6 +101,60 @@ function mockResult(subject: string, bytes: number): DiagnosisResultAI {
           { skillId: "math.algebra", score: 58, note: "mock" },
           { skillId: "math.geometry", score: 44, note: "mock" },
         ],
+    coinsBase: 50,
+  };
+}
+
+function mockTextResult(input: { subjectName: string; taskText: string; studentText: string }): DiagnosisResultAI {
+  const subj = input.subjectName;
+  const isRu = /рус|lang/i.test(subj) || /Русский/i.test(subj);
+  const isPhy = /физ/i.test(subj) || /physics/i.test(subj);
+  const mix = input.taskText.length + input.studentText.length;
+  const topic = isRu ? "Текстовый ответ" : isPhy ? "Кинематика" : "Алгебра";
+  return {
+    topic,
+    difficulty: 3,
+    originalText: input.taskText.slice(0, 4000),
+    correctSolution: isRu
+      ? "Эталон: сформулируй связный ответ по условию, проверь орфографию и термины."
+      : isPhy
+        ? "Эталон: запиши формулы, подставь числа, укажи единицы и ответ с точностью по условию."
+        : "Эталон: покажи ход решения и итоговый ответ.",
+    explanation: "[mock] Разбор по тексту ученика и условию из банка.",
+    overallScore: 60 + (mix % 25),
+    steps: [
+      {
+        stepNumber: 1,
+        description: "Понял условие",
+        isCorrect: true,
+        studentWork: "—",
+        feedback: "ok",
+      },
+      {
+        stepNumber: 2,
+        description: "Ответ ученика",
+        isCorrect: input.studentText.trim().length > 5,
+        studentWork: input.studentText.slice(0, 200),
+        feedback: input.studentText.trim().length > 5 ? "Есть содержание" : "Слишком кратко для проверки",
+        errorType: "conceptual",
+      },
+    ],
+    errors: [{ message: isRu ? "Следи за стилем и точностью формулировок" : "Проверь вычисления", type: "soft" }],
+    recommendations: [{ title: isRu ? "Практика связных ответов" : "Повтори типовую тему", action: "open_topic" }],
+    skillAssessment: isRu
+      ? [
+          { skillId: "russian.syntax", score: 58, note: "mock bank" },
+          { skillId: "russian.ortho", score: 52, note: "mock bank" },
+        ]
+      : isPhy
+        ? [
+            { skillId: "physics.mechanics", score: 56, note: "mock bank" },
+            { skillId: "physics.electricity", score: 48, note: "mock bank" },
+          ]
+        : [
+            { skillId: "math.algebra", score: 62, note: "mock bank" },
+            { skillId: "math.analysis", score: 50, note: "mock bank" },
+          ],
     coinsBase: 50,
   };
 }

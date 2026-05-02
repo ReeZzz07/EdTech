@@ -14,6 +14,7 @@ import { subjectsRouter } from "./routes/subjects";
 import { telegramWebhookRouter } from "./routes/telegramWebhook";
 import { userRouter } from "./routes/user";
 import { peerHelpRouter } from "./routes/peerHelp";
+import { bankTasksRouter } from "./routes/bankTasks";
 import { logger } from "./utils/logger";
 
 export const app = express();
@@ -69,6 +70,7 @@ app.use("/api/coins", coinsRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/clans", clansRouter);
 app.use("/api/peer-help", peerHelpRouter);
+app.use("/api/bank-tasks", bankTasksRouter);
 app.use("/api/files", filesRouter);
 
 app.use((_req, res) => {
